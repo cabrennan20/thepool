@@ -1,0 +1,21 @@
+name: Deploy Backend to Railway
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: cd backend && npm install
+      - name: Deploy to Railway (if configured)
+        run: echo "Configure Railway deployment manually or use CLI login first"
