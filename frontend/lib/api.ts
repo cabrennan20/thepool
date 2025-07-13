@@ -10,6 +10,7 @@ interface User {
   first_name?: string;
   last_name?: string;
   is_admin: boolean;
+  is_active?: boolean;
 }
 
 interface Game {
