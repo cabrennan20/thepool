@@ -4,8 +4,10 @@ buildCommand = "cd backend && npm install"
 watchPatterns = ["backend/**"]
 
 [deploy]
-startCommand = "cd backend && npm run init-railway-db && npm start"
+startCommand = "cd backend && npm start"
 healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "always"
 
 [nixpacks]
 configFile = "backend/nixpacks.toml"

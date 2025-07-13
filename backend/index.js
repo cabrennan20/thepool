@@ -158,12 +158,56 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
+// Initialize database if needed
+async function initializeDatabase() {
+  try {
+    // Check if tables exist
+    const result = await pool.query(`
+      SELECT table_name FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name = 'users';
+    `);
+    
+    if (result.rows.length === 0) {
+      console.log('🔄 Initializing database schema...');
+      const fs = require('fs');
+      const path = require('path');
+      const schemaPath = path.join(__dirname, '../database/enhanced_schema.sql');
+      
+      if (fs.existsSync(schemaPath)) {
+        const schema = fs.readFileSync(schemaPath, 'utf8');
+        await pool.query(schema);
+        console.log('✅ Database schema initialized');
+        
+        // Insert sample games
+        await pool.query(`
+          INSERT INTO games (season, week, game_date, home_team, away_team, game_status) VALUES
+          (2025, 1, '2025-09-08 20:00:00', 'Chiefs', 'Ravens', 'scheduled'),
+          (2025, 1, '2025-09-09 13:00:00', 'Bills', 'Dolphins', 'scheduled'),
+          (2025, 1, '2025-09-09 13:00:00', 'Cowboys', 'Giants', 'scheduled'),
+          (2025, 1, '2025-09-09 16:25:00', '49ers', 'Rams', 'scheduled'),
+          (2025, 1, '2025-09-09 20:20:00', 'Packers', 'Bears', 'scheduled')
+          ON CONFLICT (season, week, home_team, away_team) DO NOTHING;
+        `);
+        console.log('✅ Sample games inserted');
+      }
+    } else {
+      console.log('✅ Database already initialized');
+    }
+  } catch (error) {
+    console.error('⚠️  Database initialization warning:', error.message);
+    // Don't exit - let the app start anyway
+  }
+}
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 NFL Picks API running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   
   if (process.env.NODE_ENV === 'development') {
     console.log(`🔧 Development mode - CORS enabled for ${process.env.FRONTEND_URL || "http://localhost:3000"}`);
   }
+  
+  // Initialize database after server starts
+  await initializeDatabase();
 });
