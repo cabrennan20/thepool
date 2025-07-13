@@ -47,15 +47,10 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_0)] bg-[length:24px_24px]"></div>
-      </div>
-      
-      <div className="relative w-full max-w-md">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         {/* Main Card */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="mb-4">
@@ -80,7 +75,7 @@ const LoginForm: React.FC = () => {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="First Name"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
@@ -90,7 +85,7 @@ const LoginForm: React.FC = () => {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Last Name"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
@@ -134,7 +129,7 @@ const LoginForm: React.FC = () => {
 
             {/* Error Messages */}
             {(error || registerError) && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-red-600 text-sm text-center">{error || registerError}</p>
               </div>
             )}
@@ -143,7 +138,7 @@ const LoginForm: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || registerLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:transform-none shadow-lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 shadow-lg"
             >
               {isLoading || registerLoading ? (
                 <div className="flex items-center justify-center">
@@ -172,7 +167,7 @@ const LoginForm: React.FC = () => {
 
           {/* Demo Credentials */}
           {isLogin && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-xs text-blue-800 text-center">
                 <span className="font-semibold">Demo:</span> admin / password123
               </p>
