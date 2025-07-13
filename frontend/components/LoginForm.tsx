@@ -183,7 +183,7 @@ const LoginForm: React.FC = () => {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-white/60 text-xs">
-            Secure login powered by NFL Picks Tracker
+            Secure login • NFL Picks Tracker
           </p>
         </div>
       </div>
