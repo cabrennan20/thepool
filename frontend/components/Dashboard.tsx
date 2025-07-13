@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { getTeamLogo } from '../lib/theSportsDbApi';
 
 interface Game {
   id: string;
@@ -21,6 +22,7 @@ const Dashboard: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -28,7 +30,28 @@ const Dashboard: React.FC = () => {
         const response = await fetch('/api/odds');
         if (!response.ok) throw new Error('Failed to fetch games');
         const data = await response.json();
-        setGames(data.slice(0, 8)); // Show first 8 games
+        const gameData = data.slice(0, 8); // Show first 8 games
+        setGames(gameData);
+        
+        // Fetch team logos for all teams
+        const allTeams = new Set<string>();
+        gameData.forEach((game: Game) => {
+          allTeams.add(game.home_team);
+          allTeams.add(game.away_team);
+        });
+        
+        const logoPromises = Array.from(allTeams).map(async (teamName) => {
+          const logo = await getTeamLogo(teamName);
+          return { teamName, logo };
+        });
+        
+        const logoResults = await Promise.all(logoPromises);
+        const logoMap: Record<string, string> = {};
+        logoResults.forEach(({ teamName, logo }) => {
+          if (logo) logoMap[teamName] = logo;
+        });
+        
+        setTeamLogos(logoMap);
       } catch (err) {
         setError('Failed to load games');
       } finally {
@@ -141,12 +164,37 @@ const Dashboard: React.FC = () => {
               {games.map((game) => (
                 <div key={game.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-center">
-                        <div className="font-medium text-gray-900">{game.away_team}</div>
-                        <div className="text-sm text-gray-500">@</div>
-                        <div className="font-medium text-gray-900">{game.home_team}</div>
+                    <div className="flex items-center space-x-6">
+                      {/* Away Team */}
+                      <div className="flex items-center space-x-3">
+                        {teamLogos[game.away_team] && (
+                          <img 
+                            src={teamLogos[game.away_team]} 
+                            alt={game.away_team}
+                            className="w-10 h-10 object-contain"
+                          />
+                        )}
+                        <div className="text-center">
+                          <div className="font-medium text-gray-900">{game.away_team}</div>
+                        </div>
                       </div>
+                      
+                      <div className="text-sm text-gray-500 font-medium">@</div>
+                      
+                      {/* Home Team */}
+                      <div className="flex items-center space-x-3">
+                        <div className="text-center">
+                          <div className="font-medium text-gray-900">{game.home_team}</div>
+                        </div>
+                        {teamLogos[game.home_team] && (
+                          <img 
+                            src={teamLogos[game.home_team]} 
+                            alt={game.home_team}
+                            className="w-10 h-10 object-contain"
+                          />
+                        )}
+                      </div>
+                      
                       <div className="text-sm text-gray-500">
                         {formatDate(game.commence_time)}
                       </div>

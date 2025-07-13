@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
+import { getTeamLogo } from '../lib/theSportsDbApi';
 
 interface Game {
   id: string;
@@ -31,6 +32,7 @@ const PicksPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -45,6 +47,26 @@ const PicksPage: React.FC = () => {
         if (savedPicks) {
           setPicks(JSON.parse(savedPicks));
         }
+        
+        // Fetch team logos for all teams
+        const allTeams = new Set<string>();
+        data.forEach((game: Game) => {
+          allTeams.add(game.home_team);
+          allTeams.add(game.away_team);
+        });
+        
+        const logoPromises = Array.from(allTeams).map(async (teamName) => {
+          const logo = await getTeamLogo(teamName);
+          return { teamName, logo };
+        });
+        
+        const logoResults = await Promise.all(logoPromises);
+        const logoMap: Record<string, string> = {};
+        logoResults.forEach(({ teamName, logo }) => {
+          if (logo) logoMap[teamName] = logo;
+        });
+        
+        setTeamLogos(logoMap);
       } catch (err) {
         setError('Failed to load games');
       } finally {
@@ -152,12 +174,37 @@ const PicksPage: React.FC = () => {
               return (
                 <div key={game.id} className="bg-white shadow rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-center">
-                        <div className="font-medium text-gray-900">{game.away_team}</div>
-                        <div className="text-sm text-gray-500">@</div>
-                        <div className="font-medium text-gray-900">{game.home_team}</div>
+                    <div className="flex items-center space-x-6">
+                      {/* Away Team */}
+                      <div className="flex items-center space-x-3">
+                        {teamLogos[game.away_team] && (
+                          <img 
+                            src={teamLogos[game.away_team]} 
+                            alt={game.away_team}
+                            className="w-12 h-12 object-contain"
+                          />
+                        )}
+                        <div className="text-center">
+                          <div className="font-medium text-gray-900">{game.away_team}</div>
+                        </div>
                       </div>
+                      
+                      <div className="text-sm text-gray-500 font-medium">@</div>
+                      
+                      {/* Home Team */}
+                      <div className="flex items-center space-x-3">
+                        <div className="text-center">
+                          <div className="font-medium text-gray-900">{game.home_team}</div>
+                        </div>
+                        {teamLogos[game.home_team] && (
+                          <img 
+                            src={teamLogos[game.home_team]} 
+                            alt={game.home_team}
+                            className="w-12 h-12 object-contain"
+                          />
+                        )}
+                      </div>
+                      
                       <div className="text-sm text-gray-500">
                         {formatDate(game.commence_time)}
                       </div>
@@ -176,28 +223,42 @@ const PicksPage: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Pick Winner
                       </label>
-                      <div className="space-y-2">
-                        <label className="flex items-center">
+                      <div className="space-y-3">
+                        <label className="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
                           <input
                             type="radio"
                             name={`game_${game.id}`}
                             value={game.away_team}
                             checked={currentPick?.team === game.away_team}
                             onChange={(e) => updatePick(game.id, e.target.value, currentPick?.confidence || 1)}
-                            className="mr-2"
+                            className="mr-3"
                           />
-                          {game.away_team}
+                          {teamLogos[game.away_team] && (
+                            <img 
+                              src={teamLogos[game.away_team]} 
+                              alt={game.away_team}
+                              className="w-6 h-6 object-contain mr-2"
+                            />
+                          )}
+                          <span className="font-medium">{game.away_team}</span>
                         </label>
-                        <label className="flex items-center">
+                        <label className="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
                           <input
                             type="radio"
                             name={`game_${game.id}`}
                             value={game.home_team}
                             checked={currentPick?.team === game.home_team}
                             onChange={(e) => updatePick(game.id, e.target.value, currentPick?.confidence || 1)}
-                            className="mr-2"
+                            className="mr-3"
                           />
-                          {game.home_team}
+                          {teamLogos[game.home_team] && (
+                            <img 
+                              src={teamLogos[game.home_team]} 
+                              alt={game.home_team}
+                              className="w-6 h-6 object-contain mr-2"
+                            />
+                          )}
+                          <span className="font-medium">{game.home_team}</span>
                         </label>
                       </div>
                     </div>
