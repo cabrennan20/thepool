@@ -59,7 +59,7 @@ const LoginForm: React.FC = () => {
               </div>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              🚨 TEST UPDATE 🚨 {isLogin ? 'Welcome Back' : 'Create Account'}
+              {isLogin ? 'Welcome Back' : 'Create Account'}
             </h1>
             <p className="text-gray-600 text-sm">
               {isLogin ? 'Sign in to NFL Picks Tracker' : 'Join NFL Picks Tracker today'}
