@@ -369,7 +369,7 @@ const UserManagementItem: React.FC<UserManagementItemProps> = ({ user, onUpdate 
   const handleToggleAdmin = async () => {
     setIsUpdating(true);
     try {
-      await onUpdate(user.user_id, !user.is_admin, user.is_active);
+      await onUpdate(user.user_id, !user.is_admin, user.is_active ?? true);
     } finally {
       setIsUpdating(false);
     }
@@ -378,7 +378,7 @@ const UserManagementItem: React.FC<UserManagementItemProps> = ({ user, onUpdate 
   const handleToggleActive = async () => {
     setIsUpdating(true);
     try {
-      await onUpdate(user.user_id, user.is_admin, !user.is_active);
+      await onUpdate(user.user_id, user.is_admin, !(user.is_active ?? true));
     } finally {
       setIsUpdating(false);
     }
