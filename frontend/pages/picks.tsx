@@ -212,7 +212,7 @@ const PicksPage: React.FC = () => {
                     <div className="text-right">
                       <div className="text-sm text-gray-500">Spread</div>
                       <div className="font-medium">
-                        {game.home_team} {spread && spread > 0 ? '+' : ''}{spread || 'N/A'}
+                        {game.home_team} {spread !== null ? (spread > 0 ? '+' : '') + spread : 'N/A'}
                       </div>
                     </div>
                   </div>
