@@ -1,12 +1,20 @@
+const API_KEY = process.env.ODDS_API_KEY;
+
 export async function fetchNFLGames() {
-  const apiKey = process.env.ODDS_API_KEY;
-  const url = `https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?regions=us&markets=spreads,totals,h2h&apiKey=${apiKey}`;
+  const url = `https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds?regions=us&markets=spreads,totals,h2h&apiKey=${API_KEY}`;
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch odds: ${response.statusText}`);
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`API returned status ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching odds:", error);
+    return [];
   }
-
-  return response.json();
 }
 

@@ -1,47 +1,29 @@
-import { useEffect, useState } from "react";
-import { fetchNFLGames } from "../lib/oddsApi";
-
-type Game = {
-  id: string;
-  home_team: string;
-  away_team: string;
-  bookmakers: any[];
-};
+import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import LoginForm from '../components/LoginForm';
+import Header from '../components/Header';
+import Dashboard from '../components/Dashboard';
 
 export default function Home() {
-  const [games, setGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user, isLoading } = useAuth();
 
-  useEffect(() => {
-    async function loadGames() {
-      try {
-        const data = await fetchNFLGames();
-        setGames(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to load data.");
-      } finally {
-        setLoading(false);
-      }
-    }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
-    loadGames();
-  }, []);
-
-  if (loading) return <p>Loading NFL games...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (!user) {
+    return <LoginForm />;
+  }
 
   return (
-    <main style={{ padding: "2rem" }}>
-      <h1>NFL Game Odds</h1>
-      <ul>
-        {games.map((game) => (
-          <li key={game.id} style={{ marginBottom: "1rem" }}>
-            {game.away_team} @ {game.home_team}
-          </li>
-        ))}
-      </ul>
-    </main>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Dashboard />
+    </div>
   );
 }
 

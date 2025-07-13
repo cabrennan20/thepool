@@ -8,9 +8,14 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.2.0",
     "@opentelemetry/api": "^1.9.0",
     "@playwright/test": "^1.54.1",
+    "@tailwindcss/postcss": "^4.1.11",
     "next": "^14.2.30",
+    "node-fetch": "^3.3.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "sass": "^1.89.2",
@@ -19,6 +24,9 @@
   "devDependencies": {
     "@types/node": "^20.11.25",
     "@types/react": "^18.3.23",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5.4.5"
   }
 }
