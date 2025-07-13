@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "setup-db": "node scripts/setup-database.js"
+    "setup-db": "node scripts/setup-database.js",
+    "init-railway-db": "node scripts/init-railway-db.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
