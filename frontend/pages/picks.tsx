@@ -153,138 +153,162 @@ const PicksPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Make Your Weekly Picks</h1>
-          <p className="mt-2 text-gray-600">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Make Your Weekly Picks</h1>
+          <p className="mt-2 text-sm sm:text-base text-gray-600">
             Select your pick for each game. Pick the team you think will win!
           </p>
+          
+          {/* Progress indicator on mobile */}
+          {games.length > 0 && (
+            <div className="mt-4 sm:hidden">
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>Progress</span>
+                <span>{picks.length}/{games.length} picks</span>
+              </div>
+              <div className="mt-1 w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${(picks.length / games.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
         </div>
 
         {error ? (
           <div className="text-red-600 text-center py-4">{error}</div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
             {games.map((game) => {
               const currentPick = getPick(game.game_id);
 
               return (
-                <div key={game.game_id} className="bg-white shadow rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-6">
+                <div key={game.game_id} className="bg-white shadow rounded-lg p-4 sm:p-6">
+                  {/* Mobile-first Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 mb-4">
+                    {/* Teams Section */}
+                    <div className="flex items-center justify-center sm:justify-start space-x-3 sm:space-x-6">
                       {/* Away Team */}
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2">
                         {game.away_logo && (
                           <img 
                             src={game.away_logo} 
                             alt={game.away_team}
-                            className="w-12 h-12 object-contain"
+                            className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
                           />
                         )}
-                        <div className="text-center">
-                          <div className="font-medium text-gray-900">{game.away_team}</div>
-                        </div>
+                        <div className="font-medium text-gray-900 text-sm sm:text-base">{game.away_team}</div>
                       </div>
                       
                       <div className="text-sm text-gray-500 font-medium">@</div>
                       
                       {/* Home Team */}
-                      <div className="flex items-center space-x-3">
-                        <div className="text-center">
-                          <div className="font-medium text-gray-900">{game.home_team}</div>
-                        </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="font-medium text-gray-900 text-sm sm:text-base">{game.home_team}</div>
                         {game.home_logo && (
                           <img 
                             src={game.home_logo} 
                             alt={game.home_team}
-                            className="w-12 h-12 object-contain"
+                            className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
                           />
                         )}
                       </div>
-                      
-                      <div className="text-sm text-gray-500">
+                    </div>
+                    
+                    {/* Game Info */}
+                    <div className="flex items-center justify-between sm:flex-col sm:items-end text-center sm:text-right">
+                      <div className="text-xs sm:text-sm text-gray-500">
                         {formatDate(game.game_date)}
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">Spread</div>
-                      <div className="font-medium">
-                        {game.home_team} {game.spread ? (game.spread > 0 ? '+' : '') + game.spread : 'N/A'}
+                      <div className="text-right">
+                        <div className="text-xs text-gray-500">Spread</div>
+                        <div className="font-medium text-sm">
+                          {game.home_team} {game.spread ? (game.spread > 0 ? '+' : '') + game.spread : 'N/A'}
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     {/* Team Selection */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="lg:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
                         Pick Winner
                       </label>
-                      <div className="space-y-3">
-                        <label className="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label className={`flex items-center p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                          currentPick?.selected_team === game.away_team 
+                            ? 'border-indigo-500 bg-indigo-50' 
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}>
                           <input
                             type="radio"
                             name={`game_${game.game_id}`}
                             value={game.away_team}
                             checked={currentPick?.selected_team === game.away_team}
                             onChange={(e) => updatePick(game.game_id, e.target.value)}
-                            className="mr-3"
+                            className="mr-3 h-4 w-4"
                           />
                           {game.away_logo && (
                             <img 
                               src={game.away_logo} 
                               alt={game.away_team}
-                              className="w-6 h-6 object-contain mr-2"
+                              className="w-6 h-6 sm:w-8 sm:h-8 object-contain mr-3"
                             />
                           )}
-                          <span className="font-medium">{game.away_team}</span>
+                          <span className="font-medium text-sm sm:text-base">{game.away_team}</span>
                         </label>
-                        <label className="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                        
+                        <label className={`flex items-center p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                          currentPick?.selected_team === game.home_team 
+                            ? 'border-indigo-500 bg-indigo-50' 
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}>
                           <input
                             type="radio"
                             name={`game_${game.game_id}`}
                             value={game.home_team}
                             checked={currentPick?.selected_team === game.home_team}
                             onChange={(e) => updatePick(game.game_id, e.target.value)}
-                            className="mr-3"
+                            className="mr-3 h-4 w-4"
                           />
                           {game.home_logo && (
                             <img 
                               src={game.home_logo} 
                               alt={game.home_team}
-                              className="w-6 h-6 object-contain mr-2"
+                              className="w-6 h-6 sm:w-8 sm:h-8 object-contain mr-3"
                             />
                           )}
-                          <span className="font-medium">{game.home_team}</span>
+                          <span className="font-medium text-sm sm:text-base">{game.home_team}</span>
                         </label>
                       </div>
                     </div>
 
-                    {/* Game Time */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Game Time
-                      </label>
-                      <div className="text-sm text-gray-600">
-                        {formatDate(game.game_date)}
-                      </div>
-                    </div>
-
                     {/* Pick Summary */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="lg:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
                         Your Pick
                       </label>
-                      <div className="text-sm">
+                      <div className="space-y-3">
                         {currentPick ? (
-                          <div className="p-2 bg-green-100 rounded">
-                            <div className="font-medium">✓ {currentPick.selected_team}</div>
+                          <div className="p-3 bg-green-100 border border-green-200 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-green-600 font-medium">✓</span>
+                              <span className="font-medium text-sm sm:text-base">{currentPick.selected_team}</span>
+                            </div>
                           </div>
                         ) : (
-                          <div className="p-2 bg-gray-100 rounded text-gray-500">
-                            No pick made
+                          <div className="p-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
+                            <div className="text-sm">No pick made</div>
                           </div>
                         )}
+                        
+                        <div className="text-xs sm:text-sm text-gray-500 bg-gray-50 p-2 rounded">
+                          <div className="font-medium">Game Time:</div>
+                          <div>{formatDate(game.game_date)}</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -293,35 +317,41 @@ const PicksPage: React.FC = () => {
             })}
 
             {/* Submit Button */}
-            <div className="text-center">
+            <div className="sticky bottom-4 sm:static sm:bottom-auto bg-white sm:bg-transparent p-4 sm:p-0 border-t sm:border-t-0 border-gray-200 sm:border-gray-200 -mx-4 sm:mx-0 sm:text-center">
               <button
                 onClick={submitPicks}
                 disabled={picks.length === 0 || submitting}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-md font-medium"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-6 sm:px-8 py-3 rounded-md font-medium text-sm sm:text-base"
               >
                 {submitting ? 'Submitting...' : saved ? 'Picks Saved!' : `Submit Picks (${picks.length}/${games.length})`}
               </button>
+              
+              {picks.length > 0 && (
+                <div className="mt-2 text-xs sm:text-sm text-gray-500 text-center">
+                  {picks.length} of {games.length} games picked
+                </div>
+              )}
             </div>
 
             {/* Picks Summary */}
             {picks.length > 0 && (
-              <div className="bg-white shadow rounded-lg p-6">
+              <div className="bg-white shadow rounded-lg p-4 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Your Picks Summary</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {picks
                     .sort((a, b) => a.game_id - b.game_id)
                     .map((pick) => {
                       const game = games.find(g => g.game_id === pick.game_id);
                       return (
-                        <div key={pick.game_id} className="flex justify-between items-center p-2 border rounded">
-                          <div>
-                            <span className="font-medium">{pick.selected_team}</span>
-                            <span className="text-sm text-gray-500 ml-2">
+                        <div key={pick.game_id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 border border-gray-200 rounded-lg bg-gray-50">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm sm:text-base">{pick.selected_team}</div>
+                            <div className="text-xs sm:text-sm text-gray-500">
                               vs {game?.home_team === pick.selected_team ? game.away_team : game?.home_team}
-                            </span>
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-500">
-                            Pick submitted
+                          <div className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0">
+                            ✓ Pick made
                           </div>
                         </div>
                       );

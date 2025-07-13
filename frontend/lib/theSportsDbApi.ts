@@ -37,10 +37,53 @@ export async function fetchNFLTeams(): Promise<NFLTeam[]> {
   }
 }
 
+// Map our team abbreviations to TheSportsDB team names
+const teamAbbreviationMap: Record<string, string> = {
+  'ARI': 'Arizona Cardinals',
+  'ATL': 'Atlanta Falcons', 
+  'BAL': 'Baltimore Ravens',
+  'BUF': 'Buffalo Bills',
+  'CAR': 'Carolina Panthers',
+  'CHI': 'Chicago Bears',
+  'CIN': 'Cincinnati Bengals',
+  'CLE': 'Cleveland Browns',
+  'DAL': 'Dallas Cowboys',
+  'DEN': 'Denver Broncos',
+  'DET': 'Detroit Lions',
+  'GB': 'Green Bay Packers',
+  'HOU': 'Houston Texans',
+  'IND': 'Indianapolis Colts',
+  'JAX': 'Jacksonville Jaguars',
+  'KC': 'Kansas City Chiefs',
+  'LV': 'Las Vegas Raiders',
+  'LAC': 'Los Angeles Chargers',
+  'LAR': 'Los Angeles Rams',
+  'MIA': 'Miami Dolphins',
+  'MIN': 'Minnesota Vikings',
+  'NE': 'New England Patriots',
+  'NO': 'New Orleans Saints',
+  'NYG': 'New York Giants',
+  'NYJ': 'New York Jets',
+  'PHI': 'Philadelphia Eagles',
+  'PIT': 'Pittsburgh Steelers',
+  'SF': 'San Francisco 49ers',
+  'SEA': 'Seattle Seahawks',
+  'TB': 'Tampa Bay Buccaneers',
+  'TEN': 'Tennessee Titans',
+  'WAS': 'Washington Commanders'
+};
+
 export async function getTeamByName(teamName: string): Promise<NFLTeam | null> {
   const teams = await fetchNFLTeams();
   
-  // Try exact match first
+  // If it's an abbreviation, use our mapping first
+  const fullName = teamAbbreviationMap[teamName];
+  if (fullName) {
+    const team = teams.find(t => t.strTeam === fullName);
+    if (team) return team;
+  }
+  
+  // Try exact match
   let team = teams.find(t => 
     t.strTeam === teamName || 
     t.strTeamShort === teamName ||

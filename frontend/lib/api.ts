@@ -141,7 +141,8 @@ class ApiClient {
   }
 
   async getCurrentWeekGames(): Promise<Game[]> {
-    return this.request<Game[]>('/games/current-week');
+    const data = await this.request<{ week: number; season: number; games: Game[] }>('/games/current-week');
+    return data.games;
   }
 
   // Picks
