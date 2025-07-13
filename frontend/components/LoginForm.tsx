@@ -62,7 +62,7 @@ const LoginForm: React.FC = () => {
               {isLogin ? 'Welcome Back' : 'Create Account'}
             </h1>
             <p className="text-gray-600 text-sm">
-              {isLogin ? 'Sign in to NFL Picks Tracker' : 'Join NFL Picks Tracker today'}
+              {isLogin ? 'Sign in to ThePool' : 'Join ThePool today'}
             </p>
           </div>
 
@@ -178,7 +178,7 @@ const LoginForm: React.FC = () => {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-white/60 text-xs">
-            Secure login • NFL Picks Tracker
+            Secure login • ThePool
           </p>
         </div>
       </div>

@@ -12,7 +12,7 @@ const Header: React.FC = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <a href="/" className="text-xl font-semibold text-gray-900 hover:text-gray-700">
-              NFL Picks Tracker
+              ThePool
             </a>
           </div>
           <div className="flex items-center space-x-4">
