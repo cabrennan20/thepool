@@ -11,6 +11,7 @@ interface LeaderboardEntry {
   last_name?: string;
   total_correct?: number;
   total_games?: number;
+  total_picks?: number;
   total_points?: number;
   win_percentage?: number;
   weekly_rank?: number;
