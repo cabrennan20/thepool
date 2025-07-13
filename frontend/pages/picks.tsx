@@ -309,19 +309,19 @@ const PicksPage: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Your Picks Summary</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {picks
-                    .sort((a, b) => b.confidence - a.confidence)
+                    .sort((a, b) => a.game_id - b.game_id)
                     .map((pick) => {
-                      const game = games.find(g => g.id === pick.gameId);
+                      const game = games.find(g => g.game_id === pick.game_id);
                       return (
-                        <div key={pick.gameId} className="flex justify-between items-center p-2 border rounded">
+                        <div key={pick.game_id} className="flex justify-between items-center p-2 border rounded">
                           <div>
-                            <span className="font-medium">{pick.team}</span>
+                            <span className="font-medium">{pick.selected_team}</span>
                             <span className="text-sm text-gray-500 ml-2">
-                              vs {game?.home_team === pick.team ? game.away_team : game?.home_team}
+                              vs {game?.home_team === pick.selected_team ? game.away_team : game?.home_team}
                             </span>
                           </div>
-                          <div className="font-medium text-indigo-600">
-                            {pick.confidence} pts
+                          <div className="text-sm text-gray-500">
+                            Pick submitted
                           </div>
                         </div>
                       );
