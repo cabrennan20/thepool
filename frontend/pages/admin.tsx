@@ -56,10 +56,7 @@ const AdminPanel: React.FC = () => {
       setError('');
       setSuccessMessage('');
       
-      await api.request(`/admin/games/${gameId}/result`, {
-        method: 'PUT',
-        body: JSON.stringify({ home_score: homeScore, away_score: awayScore })
-      });
+      await api.updateGameResult(gameId, homeScore, awayScore);
       
       setSuccessMessage('Game result updated successfully!');
       
@@ -78,9 +75,7 @@ const AdminPanel: React.FC = () => {
       setError('');
       setSuccessMessage('');
       
-      await api.request(`/admin/calculate-scores?week=${week}&season=${season}`, {
-        method: 'POST'
-      });
+      await api.calculateWeeklyScores(week, season);
       
       setSuccessMessage(`Weekly scores calculated for Week ${week}!`);
       
@@ -95,15 +90,12 @@ const AdminPanel: React.FC = () => {
       setError('');
       setSuccessMessage('');
       
-      await api.request(`/admin/users/${userId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ is_admin: isAdmin, is_active: isActive })
-      });
+      await api.updateUser(userId, { is_admin: isAdmin, is_active: isActive });
       
       setSuccessMessage('User updated successfully!');
       
       // Refresh users data
-      const usersData = await api.request<User[]>('/admin/users');
+      const usersData = await api.getAllUsers();
       setUsers(usersData);
       
     } catch (err) {

@@ -228,6 +228,13 @@ class ApiClient {
   async getAllUsers(): Promise<User[]> {
     return this.request<User[]>('/admin/users');
   }
+
+  async updateUser(userId: number, updates: Partial<User>): Promise<User> {
+    return this.request<User>(`/admin/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
 }
 
 export const api = new ApiClient();
