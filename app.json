@@ -1,0 +1,28 @@
+{
+  "name": "NFL Picks Tracker Backend",
+  "description": "Backend API for NFL picks tracking application",
+  "repository": "https://github.com/cabrennan20/thepool",
+  "keywords": ["node", "express", "postgresql", "nfl"],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "env": {
+    "NODE_ENV": {
+      "value": "production"
+    },
+    "NPM_CONFIG_PRODUCTION": {
+      "value": "false"
+    }
+  },
+  "scripts": {
+    "postdeploy": "echo 'Deployment complete'"
+  }
+}

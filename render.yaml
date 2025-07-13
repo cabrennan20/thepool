@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: nfl-picks-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: postgresql://postgres:HwKlzm@G!41AsZ^E@db.kovvuunskzaplmonxvld.supabase.co:5432/postgres
+      - key: JWT_SECRET
+        value: nfl-picks-production-jwt-secret-key-2025-highly-secure-random-string
+      - key: FRONTEND_URL
+        value: https://nfl-picks-tracker.vercel.app
+      - key: ODDS_API_KEY
+        value: 79e5cc79e3e53c495cc5e8b237bef599
