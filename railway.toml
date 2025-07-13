@@ -1,8 +1,13 @@
 [build]
-buildCommand = "cd backend && npm install"
+builder = "nixpacks"
+buildCommand = "npm install"
+watchPatterns = ["backend/**"]
 
 [deploy]
-startCommand = "cd backend && npm start"
+startCommand = "npm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 100
 restartPolicyType = "always"
+
+[source]
+rootDirectory = "backend"
