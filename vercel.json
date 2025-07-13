@@ -16,8 +16,5 @@
       "src": "/(.*)",
       "dest": "frontend/$1"
     }
-  ],
-  "env": {
-    "ODDS_API_KEY": "@odds_api_key"
-  }
+  ]
 }
