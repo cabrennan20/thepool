@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getTeamLogo } from '../lib/theSportsDbApi';
+import { api } from '../lib/api';
 
 interface Game {
   id: string;
@@ -23,10 +24,26 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+  const [userStats, setUserStats] = useState({
+    total_correct: 0,
+    total_games: 0,
+    win_percentage: 0
+  });
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch user stats if user is logged in
+        if (user) {
+          try {
+            const stats = await api.getUserStats(user.user_id);
+            setUserStats(stats);
+          } catch (error) {
+            console.error('Failed to load user stats:', error);
+          }
+        }
+
+        // Fetch games from local API (which uses odds API)
         const response = await fetch('/api/odds');
         if (!response.ok) throw new Error('Failed to fetch games');
         const data = await response.json();
@@ -59,8 +76,8 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    fetchGames();
-  }, []);
+    fetchData();
+  }, [user]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -108,7 +125,7 @@ const Dashboard: React.FC = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Wins</dt>
-                  <dd className="text-lg font-medium text-gray-900">0</dd>
+                  <dd className="text-lg font-medium text-gray-900">{userStats.total_correct}</dd>
                 </dl>
               </div>
             </div>
@@ -126,7 +143,7 @@ const Dashboard: React.FC = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Losses</dt>
-                  <dd className="text-lg font-medium text-gray-900">0</dd>
+                  <dd className="text-lg font-medium text-gray-900">{userStats.total_games - userStats.total_correct}</dd>
                 </dl>
               </div>
             </div>
@@ -144,7 +161,7 @@ const Dashboard: React.FC = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Win Rate</dt>
-                  <dd className="text-lg font-medium text-gray-900">0%</dd>
+                  <dd className="text-lg font-medium text-gray-900">{userStats.win_percentage.toFixed(1)}%</dd>
                 </dl>
               </div>
             </div>

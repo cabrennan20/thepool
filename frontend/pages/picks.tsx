@@ -3,80 +3,74 @@ import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
 import { getTeamLogo } from '../lib/theSportsDbApi';
+import { api, type Game, type Pick } from '../lib/api';
 
-interface Game {
-  id: string;
-  home_team: string;
-  away_team: string;
-  commence_time: string;
-  bookmakers: Array<{
-    markets: Array<{
-      outcomes: Array<{
-        name: string;
-        point: number;
-      }>;
-    }>;
-  }>;
+interface GameWithLogos extends Game {
+  home_logo?: string;
+  away_logo?: string;
 }
 
-interface Pick {
-  gameId: string;
-  team: string;
-  confidence: number;
+interface PickFormData {
+  game_id: number;
+  selected_team: string;
 }
 
 const PicksPage: React.FC = () => {
   const { user, isLoading } = useAuth();
-  const [games, setGames] = useState<Game[]>([]);
+  const [games, setGames] = useState<GameWithLogos[]>([]);
   const [picks, setPicks] = useState<Pick[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const fetchData = async () => {
+      if (!user) return;
+      
       try {
-        const response = await fetch('/api/odds');
-        if (!response.ok) throw new Error('Failed to fetch games');
-        const data = await response.json();
-        setGames(data);
+        // Fetch games from backend
+        const gamesData = await api.getCurrentWeekGames();
         
-        // Load saved picks from localStorage
-        const savedPicks = localStorage.getItem(`picks_${user?.id}`);
-        if (savedPicks) {
-          setPicks(JSON.parse(savedPicks));
+        // Fetch team logos
+        const gamesWithLogos = await Promise.all(
+          gamesData.map(async (game) => {
+            const [homeLogo, awayLogo] = await Promise.all([
+              getTeamLogo(game.home_team),
+              getTeamLogo(game.away_team)
+            ]);
+            return {
+              ...game,
+              home_logo: homeLogo || undefined,
+              away_logo: awayLogo || undefined
+            };
+          })
+        );
+        
+        setGames(gamesWithLogos);
+        
+        // Load existing picks for current week
+        try {
+          const currentDate = new Date();
+          const currentWeek = 1; // TODO: Get from system settings
+          const currentSeason = currentDate.getFullYear();
+          
+          const existingPicks = await api.getUserPicks(user.user_id, currentWeek, currentSeason);
+          setPicks(existingPicks);
+        } catch (pickError) {
+          console.log('No existing picks found');
+          setPicks([]);
         }
         
-        // Fetch team logos for all teams
-        const allTeams = new Set<string>();
-        data.forEach((game: Game) => {
-          allTeams.add(game.home_team);
-          allTeams.add(game.away_team);
-        });
-        
-        const logoPromises = Array.from(allTeams).map(async (teamName) => {
-          const logo = await getTeamLogo(teamName);
-          return { teamName, logo };
-        });
-        
-        const logoResults = await Promise.all(logoPromises);
-        const logoMap: Record<string, string> = {};
-        logoResults.forEach(({ teamName, logo }) => {
-          if (logo) logoMap[teamName] = logo;
-        });
-        
-        setTeamLogos(logoMap);
       } catch (err) {
-        setError('Failed to load games');
+        setError('Failed to load data');
+        console.error('Fetch error:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (user) {
-      fetchGames();
-    }
+    fetchData();
   }, [user]);
 
   const formatDate = (dateString: string) => {
@@ -89,43 +83,48 @@ const PicksPage: React.FC = () => {
     });
   };
 
-  const getSpread = (game: Game) => {
-    const market = game.bookmakers?.[0]?.markets?.[0];
-    if (!market) return null;
-    
-    const homeOutcome = market.outcomes.find(o => o.name === game.home_team);
-    return homeOutcome?.point || 0;
-  };
-
-  const updatePick = (gameId: string, team: string, confidence: number) => {
-    const newPicks = picks.filter(p => p.gameId !== gameId);
-    if (team && confidence > 0) {
-      newPicks.push({ gameId, team, confidence });
+  const updatePick = (gameId: number, team: string) => {
+    const newPicks = picks.filter(p => p.game_id !== gameId);
+    if (team) {
+      newPicks.push({ 
+        game_id: gameId, 
+        selected_team: team,
+        user_id: user!.user_id
+      });
     }
     setPicks(newPicks);
     setSaved(false);
   };
 
-  const getPick = (gameId: string) => {
-    return picks.find(p => p.gameId === gameId);
+  const getPick = (gameId: number) => {
+    return picks.find(p => p.game_id === gameId);
   };
 
-  const savePicks = () => {
-    if (user) {
-      localStorage.setItem(`picks_${user.id}`, JSON.stringify(picks));
+  const submitPicks = async () => {
+    if (!user || picks.length === 0) return;
+    
+    try {
+      setSubmitting(true);
+      setError('');
+      
+      const pickData = picks.map(pick => ({
+        game_id: pick.game_id,
+        selected_team: pick.selected_team
+      }));
+      
+      await api.submitPicks(pickData);
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => setSaved(false), 3000);
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit picks';
+      setError(errorMessage);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const getAvailableConfidences = (gameId: string) => {
-    const usedConfidences = picks
-      .filter(p => p.gameId !== gameId)
-      .map(p => p.confidence);
-    
-    return Array.from({ length: games.length }, (_, i) => i + 1)
-      .filter(conf => !usedConfidences.includes(conf));
-  };
+  // No confidence points needed anymore
 
   if (isLoading) {
     return (
@@ -158,7 +157,7 @@ const PicksPage: React.FC = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Make Your Weekly Picks</h1>
           <p className="mt-2 text-gray-600">
-            Select your pick for each game and assign confidence points (1 = least confident, {games.length} = most confident)
+            Select your pick for each game. Pick the team you think will win!
           </p>
         </div>
 
@@ -167,19 +166,17 @@ const PicksPage: React.FC = () => {
         ) : (
           <div className="space-y-6">
             {games.map((game) => {
-              const currentPick = getPick(game.id);
-              const spread = getSpread(game);
-              const availableConfidences = getAvailableConfidences(game.id);
+              const currentPick = getPick(game.game_id);
 
               return (
-                <div key={game.id} className="bg-white shadow rounded-lg p-6">
+                <div key={game.game_id} className="bg-white shadow rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-6">
                       {/* Away Team */}
                       <div className="flex items-center space-x-3">
-                        {teamLogos[game.away_team] && (
+                        {game.away_logo && (
                           <img 
-                            src={teamLogos[game.away_team]} 
+                            src={game.away_logo} 
                             alt={game.away_team}
                             className="w-12 h-12 object-contain"
                           />
@@ -196,9 +193,9 @@ const PicksPage: React.FC = () => {
                         <div className="text-center">
                           <div className="font-medium text-gray-900">{game.home_team}</div>
                         </div>
-                        {teamLogos[game.home_team] && (
+                        {game.home_logo && (
                           <img 
-                            src={teamLogos[game.home_team]} 
+                            src={game.home_logo} 
                             alt={game.home_team}
                             className="w-12 h-12 object-contain"
                           />
@@ -206,13 +203,13 @@ const PicksPage: React.FC = () => {
                       </div>
                       
                       <div className="text-sm text-gray-500">
-                        {formatDate(game.commence_time)}
+                        {formatDate(game.game_date)}
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-gray-500">Spread</div>
                       <div className="font-medium">
-                        {game.home_team} {spread !== null ? (spread > 0 ? '+' : '') + spread : 'N/A'}
+                        {game.home_team} {game.spread ? (game.spread > 0 ? '+' : '') + game.spread : 'N/A'}
                       </div>
                     </div>
                   </div>
@@ -227,15 +224,15 @@ const PicksPage: React.FC = () => {
                         <label className="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
                           <input
                             type="radio"
-                            name={`game_${game.id}`}
+                            name={`game_${game.game_id}`}
                             value={game.away_team}
-                            checked={currentPick?.team === game.away_team}
-                            onChange={(e) => updatePick(game.id, e.target.value, currentPick?.confidence || 1)}
+                            checked={currentPick?.selected_team === game.away_team}
+                            onChange={(e) => updatePick(game.game_id, e.target.value)}
                             className="mr-3"
                           />
-                          {teamLogos[game.away_team] && (
+                          {game.away_logo && (
                             <img 
-                              src={teamLogos[game.away_team]} 
+                              src={game.away_logo} 
                               alt={game.away_team}
                               className="w-6 h-6 object-contain mr-2"
                             />
@@ -245,15 +242,15 @@ const PicksPage: React.FC = () => {
                         <label className="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
                           <input
                             type="radio"
-                            name={`game_${game.id}`}
+                            name={`game_${game.game_id}`}
                             value={game.home_team}
-                            checked={currentPick?.team === game.home_team}
-                            onChange={(e) => updatePick(game.id, e.target.value, currentPick?.confidence || 1)}
+                            checked={currentPick?.selected_team === game.home_team}
+                            onChange={(e) => updatePick(game.game_id, e.target.value)}
                             className="mr-3"
                           />
-                          {teamLogos[game.home_team] && (
+                          {game.home_logo && (
                             <img 
-                              src={teamLogos[game.home_team]} 
+                              src={game.home_logo} 
                               alt={game.home_team}
                               className="w-6 h-6 object-contain mr-2"
                             />
@@ -263,30 +260,14 @@ const PicksPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Confidence Points */}
+                    {/* Game Time */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Confidence Points
+                        Game Time
                       </label>
-                      <select
-                        value={currentPick?.confidence || ''}
-                        onChange={(e) => {
-                          const confidence = parseInt(e.target.value);
-                          if (currentPick?.team && confidence) {
-                            updatePick(game.id, currentPick.team, confidence);
-                          }
-                        }}
-                        disabled={!currentPick?.team}
-                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      >
-                        <option value="">Select confidence</option>
-                        {currentPick?.confidence && !availableConfidences.includes(currentPick.confidence) && (
-                          <option value={currentPick.confidence}>{currentPick.confidence}</option>
-                        )}
-                        {availableConfidences.map(conf => (
-                          <option key={conf} value={conf}>{conf}</option>
-                        ))}
-                      </select>
+                      <div className="text-sm text-gray-600">
+                        {formatDate(game.game_date)}
+                      </div>
                     </div>
 
                     {/* Pick Summary */}
@@ -297,8 +278,7 @@ const PicksPage: React.FC = () => {
                       <div className="text-sm">
                         {currentPick ? (
                           <div className="p-2 bg-green-100 rounded">
-                            <div className="font-medium">{currentPick.team}</div>
-                            <div className="text-gray-600">Confidence: {currentPick.confidence}</div>
+                            <div className="font-medium">✓ {currentPick.selected_team}</div>
                           </div>
                         ) : (
                           <div className="p-2 bg-gray-100 rounded text-gray-500">
@@ -312,14 +292,14 @@ const PicksPage: React.FC = () => {
               );
             })}
 
-            {/* Save Button */}
+            {/* Submit Button */}
             <div className="text-center">
               <button
-                onClick={savePicks}
-                disabled={picks.length === 0}
+                onClick={submitPicks}
+                disabled={picks.length === 0 || submitting}
                 className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-md font-medium"
               >
-                {saved ? 'Picks Saved!' : `Save Picks (${picks.length}/${games.length})`}
+                {submitting ? 'Submitting...' : saved ? 'Picks Saved!' : `Submit Picks (${picks.length}/${games.length})`}
               </button>
             </div>
 

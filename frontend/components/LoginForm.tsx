@@ -4,20 +4,11 @@ import { useAuth } from '../contexts/AuthContext';
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isLoading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    const success = await login(username, password);
-    if (!success) {
-      setError('Invalid credentials. Username is required and password must be at least 4 characters.');
-    }
-    setIsLoading(false);
+    await login(username, password);
   };
 
   return (
@@ -67,7 +58,7 @@ const LoginForm: React.FC = () => {
           </div>
 
           <div className="text-sm text-center text-gray-600">
-            <p>Demo: Enter any username and password (4+ characters)</p>
+            <p>Use: <strong>admin</strong> / any password (8+ chars) or register a new account</p>
           </div>
         </form>
       </div>
