@@ -202,7 +202,7 @@ const Dashboard: React.FC = () => {
                     <div className="text-right">
                       <div className="text-sm text-gray-500">Spread</div>
                       <div className="font-medium">
-                        {game.home_team} {getSpread(game) > 0 ? '+' : ''}{getSpread(game)}
+                        {game.home_team} {getSpread(game) && getSpread(game)! > 0 ? '+' : ''}{getSpread(game) || 'N/A'}
                       </div>
                     </div>
                   </div>

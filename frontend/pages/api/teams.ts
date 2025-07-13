@@ -37,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     // Return cached data if still valid
     if (cachedTeams && (now - cacheTimestamp) < CACHE_DURATION) {
+      res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=7200'); // Cache for 1 hour
       return res.status(200).json({ teams: cachedTeams });
     }
 
@@ -53,6 +54,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     cachedTeams = data.teams || [];
     cacheTimestamp = now;
     
+    // Add cache headers
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=7200'); // Cache for 1 hour
     res.status(200).json({ teams: cachedTeams });
   } catch (error: any) {
     console.error('Error fetching NFL teams:', error);
