@@ -37,7 +37,7 @@ const AdminPanel: React.FC = () => {
         setCurrentWeekGames(gamesData);
         
         // Fetch all users
-        const usersData = await api.request<User[]>('/admin/users');
+        const usersData = await api.getAllUsers();
         setUsers(usersData);
         
       } catch (err) {

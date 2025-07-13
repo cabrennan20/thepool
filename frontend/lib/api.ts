@@ -224,6 +224,10 @@ class ApiClient {
       method: 'POST',
     });
   }
+
+  async getAllUsers(): Promise<User[]> {
+    return this.request<User[]>('/admin/users');
+  }
 }
 
 export const api = new ApiClient();
