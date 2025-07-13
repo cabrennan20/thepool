@@ -1,0 +1,11 @@
+backend/
+database/
+node_modules/
+.git/
+.env
+.env.local
+*.md
+deploy.sh
+railway.*
+render.yaml
+app.json
