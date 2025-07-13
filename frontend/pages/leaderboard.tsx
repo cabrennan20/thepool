@@ -61,7 +61,7 @@ const LeaderboardPage: React.FC = () => {
           if ((b.total_points || 0) !== (a.total_points || 0)) {
             return (b.total_points || 0) - (a.total_points || 0);
           }
-          return (b.total_correct || 0) - (a.total_correct || 0);
+          return (b.correct_picks || 0) - (a.correct_picks || 0);
         });
         
         setSeasonLeaderboard(sortedSeason);
@@ -222,10 +222,10 @@ const LeaderboardPage: React.FC = () => {
                             </div>
                           </td>
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {activeTab === 'weekly' ? entry.correct_picks : entry.total_correct || 0}
+                            {entry.correct_picks || 0}
                           </td>
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {activeTab === 'weekly' ? entry.total_picks : entry.total_games || 0}
+                            {entry.total_picks || 0}
                           </td>
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {((entry.win_percentage || 0)).toFixed(1)}%
