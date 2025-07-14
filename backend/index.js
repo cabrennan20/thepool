@@ -240,8 +240,8 @@ async function initializeDatabase() {
   }
 }
 
-// Railway port configuration
-const PORT = process.env.PORT || 3001;
+// Railway port configuration - avoid conflict with PostgreSQL port 5432
+const PORT = process.env.PORT === '5432' ? 3001 : (process.env.PORT || 3001);
 console.log('🔍 Environment check:', {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
