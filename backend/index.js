@@ -236,13 +236,17 @@ async function initializeDatabase() {
   }
 }
 
-// Force correct port - Railway shouldn't use database port for web server
-const PORT = 3001;
-console.log('🔧 Forcing port 3001 to avoid Railway port conflicts');
-console.log('🔍 Original env.PORT was:', process.env.PORT);
-app.listen(PORT, async () => {
-  console.log(`🚀 NFL Picks API running on http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+// Railway port configuration
+const PORT = process.env.PORT || 3001;
+console.log('🔍 Environment check:', {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET'
+});
+
+app.listen(PORT, '0.0.0.0', async () => {
+  console.log(`🚀 NFL Picks API running on http://0.0.0.0:${PORT}`);
+  console.log(`📊 Health check: http://0.0.0.0:${PORT}/api/health`);
   
   if (process.env.NODE_ENV === 'development') {
     console.log(`🔧 Development mode - CORS enabled for ${process.env.FRONTEND_URL || "http://localhost:3000"}`);
