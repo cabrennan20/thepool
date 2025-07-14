@@ -140,12 +140,21 @@ app.get("/api/users/:userId/stats", async (req, res) => {
       WHERE ws.user_id = $1 AND ws.season = $2
     `, [userId, season]);
     
-    const stats = result.rows[0] || {
+    const rawStats = result.rows[0] || {
       total_correct: 0,
       total_games: 0, 
       win_percentage: 0,
       weeks_played: 0,
       season_rank: 0
+    };
+    
+    // Convert string numbers to actual numbers for frontend
+    const stats = {
+      total_correct: parseInt(rawStats.total_correct) || 0,
+      total_games: parseInt(rawStats.total_games) || 0,
+      win_percentage: parseFloat(rawStats.win_percentage) || 0,
+      weeks_played: parseInt(rawStats.weeks_played) || 0,
+      season_rank: parseInt(rawStats.season_rank) || 0
     };
     
     res.json(stats);
@@ -173,7 +182,16 @@ app.get("/api/leaderboard", async (req, res) => {
       ORDER BY total_wins DESC, win_percentage DESC
       LIMIT 20
     `);
-    res.json(result.rows);
+    
+    // Convert string numbers to actual numbers for frontend
+    const leaderboard = result.rows.map(row => ({
+      ...row,
+      total_wins: parseInt(row.total_wins) || 0,
+      total_games: parseInt(row.total_games) || 0,
+      win_percentage: parseFloat(row.win_percentage) || 0
+    }));
+    
+    res.json(leaderboard);
   } catch (error) {
     console.error('Leaderboard error:', error);
     res.status(500).json({ error: 'Failed to fetch leaderboard' });
