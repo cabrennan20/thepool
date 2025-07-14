@@ -236,19 +236,10 @@ async function initializeDatabase() {
   }
 }
 
-// Debug port assignment
-console.log('🔍 Port debug:', {
-  'process.env.PORT': process.env.PORT,
-  'process.env.RAILWAY_PORT': process.env.RAILWAY_PORT,
-  'process.env.RAILWAY_TCP_APPLICATION_PORT': process.env.RAILWAY_TCP_APPLICATION_PORT
-});
-
-// Fix: Don't use port 5432 (database port) for web server
-let PORT = process.env.PORT || 3001;
-if (PORT === '5432' || PORT === 5432) {
-  console.log('⚠️  Detected database port 5432, using 3001 instead');
-  PORT = 3001;
-}
+// Force correct port - Railway shouldn't use database port for web server
+const PORT = 3001;
+console.log('🔧 Forcing port 3001 to avoid Railway port conflicts');
+console.log('🔍 Original env.PORT was:', process.env.PORT);
 app.listen(PORT, async () => {
   console.log(`🚀 NFL Picks API running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
