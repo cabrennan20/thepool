@@ -48,7 +48,6 @@ const pickRoutes = require('./routes/picks');
 const scoreRoutes = require('./routes/scores');
 const adminRoutes = require('./routes/admin');
 const systemRoutes = require('./routes/system');
-const setupRoutes = require('./routes/setup');
 
 // Add database pool to request object
 app.use((req, res, next) => {
@@ -63,7 +62,6 @@ app.use('/api/picks', pickRoutes);
 app.use('/api/scores', scoreRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/system', systemRoutes);
-app.use('/api/setup', setupRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
