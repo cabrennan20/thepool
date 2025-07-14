@@ -82,6 +82,43 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Temporary admin creation endpoint
+app.get('/api/create-admin-user', async (req, res) => {
+  try {
+    const bcrypt = require('bcrypt');
+    const adminPassword = 'password123';
+    const saltRounds = 12;
+    const passwordHash = await bcrypt.hash(adminPassword, saltRounds);
+    
+    // Delete existing admin user if exists
+    await pool.query('DELETE FROM users WHERE username = $1 OR email = $2', ['admin', 'admin@thepool.com']);
+    
+    // Create new admin user
+    const result = await pool.query(`
+      INSERT INTO users (username, email, password_hash, first_name, last_name, is_admin, is_active) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7) 
+      RETURNING user_id, username, email, is_admin
+    `, ['admin', 'admin@thepool.com', passwordHash, 'Admin', 'User', true, true]);
+    
+    const admin = result.rows[0];
+    res.json({
+      success: true,
+      message: 'Admin user created successfully!',
+      admin: {
+        user_id: admin.user_id,
+        username: admin.username,
+        email: admin.email,
+        is_admin: admin.is_admin
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // GET /api/users/:userId/stats - Get user stats for dashboard
 app.get("/api/users/:userId/stats", async (req, res) => {
   try {
