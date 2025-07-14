@@ -243,7 +243,12 @@ console.log('🔍 Port debug:', {
   'process.env.RAILWAY_TCP_APPLICATION_PORT': process.env.RAILWAY_TCP_APPLICATION_PORT
 });
 
-const PORT = process.env.PORT || process.env.RAILWAY_TCP_APPLICATION_PORT || 3001;
+// Fix: Don't use port 5432 (database port) for web server
+let PORT = process.env.PORT || 3001;
+if (PORT === '5432' || PORT === 5432) {
+  console.log('⚠️  Detected database port 5432, using 3001 instead');
+  PORT = 3001;
+}
 app.listen(PORT, async () => {
   console.log(`🚀 NFL Picks API running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
