@@ -236,7 +236,7 @@ async function initializeDatabase() {
   }
 }
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || process.env.RAILWAY_PORT || 3001;
 app.listen(PORT, async () => {
   console.log(`🚀 NFL Picks API running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
