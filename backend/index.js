@@ -245,7 +245,9 @@ const PORT = process.env.PORT || 3001;
 console.log('🔍 Environment check:', {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
-  DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET'
+  DETECTED_PORT: PORT,
+  DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'NOT SET'
 });
 
 app.listen(PORT, '0.0.0.0', async () => {
