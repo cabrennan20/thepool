@@ -16,6 +16,8 @@ CREATE TABLE users (
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     alias VARCHAR(50) UNIQUE,
+    phone VARCHAR(20),
+    address VARCHAR(200),
     is_admin BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

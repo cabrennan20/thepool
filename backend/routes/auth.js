@@ -16,7 +16,9 @@ const registerSchema = z.object({
   password: z.string().min(8).max(100),
   first_name: z.string().min(1).max(50).optional(),
   last_name: z.string().min(1).max(50).optional(),
-  alias: z.string().min(2).max(50).regex(/^[a-zA-Z0-9\s&'-]+$/, 'Alias can only contain letters, numbers, spaces, and common symbols')
+  alias: z.string().min(2).max(50).regex(/^[a-zA-Z0-9\s&'-]+$/, 'Alias can only contain letters, numbers, spaces, and common symbols'),
+  phone: z.string().min(10).max(20).regex(/^[\d\s\-\+\(\)\.]+$/, 'Phone number can only contain digits, spaces, and common symbols'),
+  address: z.string().min(5).max(200)
 });
 
 // JWT secret
@@ -65,7 +67,7 @@ function requireAdmin(req, res, next) {
 router.post('/register', async (req, res) => {
   try {
     const validatedData = registerSchema.parse(req.body);
-    const { username, email, password, first_name, last_name, alias } = validatedData;
+    const { username, email, password, first_name, last_name, alias, phone, address } = validatedData;
 
     // Check if user already exists (username, email, or alias)
     const existingUser = await req.db.query(
@@ -85,10 +87,10 @@ router.post('/register', async (req, res) => {
 
     // Create user
     const result = await req.db.query(
-      `INSERT INTO users (username, email, password_hash, first_name, last_name, alias) 
-       VALUES ($1, $2, $3, $4, $5, $6) 
+      `INSERT INTO users (username, email, password_hash, first_name, last_name, alias, phone, address) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
        RETURNING user_id, username, email, first_name, last_name, alias, is_admin, created_at`,
-      [username, email, password_hash, first_name, last_name, alias]
+      [username, email, password_hash, first_name, last_name, alias, phone, address]
     );
 
     const user = result.rows[0];

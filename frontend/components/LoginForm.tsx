@@ -10,6 +10,8 @@ const LoginForm: React.FC = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [alias, setAlias] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerLoading, setRegisterLoading] = useState(false);
   const { login, isLoading, error } = useAuth();
@@ -34,7 +36,9 @@ const LoginForm: React.FC = () => {
         password,
         first_name: firstName,
         last_name: lastName,
-        alias
+        alias,
+        phone,
+        address
       });
       
       // Auto-login after successful registration
@@ -115,6 +119,29 @@ const LoginForm: React.FC = () => {
                   />
                   <p className="text-xs text-gray-500 mt-1 px-1">
                     This is your display name in the league (e.g., "Team Ram Rod", "Clammy Twatkins")
+                  </p>
+                </div>
+                <div>
+                  <input
+                    type="tel"
+                    required
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Phone Number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500 mt-1 px-1">
+                    For admin contact purposes only - not visible to other members
                   </p>
                 </div>
               </>

@@ -23,6 +23,7 @@ const PicksPage: React.FC = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [tiebreakerPoints, setTiebreakerPoints] = useState<number | ''>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +58,13 @@ const PicksPage: React.FC = () => {
           
           const existingPicks = await api.getUserPicks(user.user_id, currentWeek, currentSeason);
           setPicks(existingPicks);
+          
+          // Load existing tiebreaker points from final game pick
+          const finalGame = gamesWithLogos[gamesWithLogos.length - 1];
+          const finalGamePick = existingPicks.find(p => p.game_id === finalGame?.game_id);
+          if (finalGamePick?.tiebreaker_points) {
+            setTiebreakerPoints(finalGamePick.tiebreaker_points);
+          }
         } catch (pickError) {
           console.log('No existing picks found');
           setPicks([]);
@@ -107,9 +115,11 @@ const PicksPage: React.FC = () => {
       setSubmitting(true);
       setError('');
       
+      const finalGame = games[games.length - 1];
       const pickData = picks.map(pick => ({
         game_id: pick.game_id,
-        selected_team: pick.selected_team
+        selected_team: pick.selected_team,
+        tiebreaker_points: pick.game_id === finalGame?.game_id ? Number(tiebreakerPoints) || undefined : undefined
       }));
       
       await api.submitPicks(pickData);
@@ -315,6 +325,37 @@ const PicksPage: React.FC = () => {
                 </div>
               );
             })}
+
+            {/* Tiebreaker Section */}
+            {games.length > 0 && (
+              <div className="bg-white shadow rounded-lg p-4 sm:p-6 border-2 border-indigo-200">
+                <div className="mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Tiebreaker</h3>
+                  <p className="text-sm text-gray-600">
+                    Enter the total points you think will be scored by both teams in the final game: 
+                    <span className="font-medium"> {games[games.length - 1]?.away_team} @ {games[games.length - 1]?.home_team}</span>
+                  </p>
+                </div>
+                
+                <div className="max-w-xs">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Total Points Prediction
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="200"
+                    value={tiebreakerPoints}
+                    onChange={(e) => setTiebreakerPoints(e.target.value === '' ? '' : parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="e.g., 45"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Combined score of both teams (used to break ties)
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Submit Button */}
             <div className="sticky bottom-4 sm:static sm:bottom-auto bg-white sm:bg-transparent p-4 sm:p-0 border-t sm:border-t-0 border-gray-200 sm:border-gray-200 -mx-4 sm:mx-0 sm:text-center">

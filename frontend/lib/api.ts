@@ -141,6 +141,8 @@ class ApiClient {
     first_name?: string;
     last_name?: string;
     alias: string;
+    phone: string;
+    address: string;
   }): Promise<{ user: User; token: string }> {
     const data = await this.request<{ user: User; token: string }>('/auth/register', {
       method: 'POST',
