@@ -236,7 +236,14 @@ async function initializeDatabase() {
   }
 }
 
-const PORT = process.env.PORT || process.env.RAILWAY_PORT || 3001;
+// Debug port assignment
+console.log('🔍 Port debug:', {
+  'process.env.PORT': process.env.PORT,
+  'process.env.RAILWAY_PORT': process.env.RAILWAY_PORT,
+  'process.env.RAILWAY_TCP_APPLICATION_PORT': process.env.RAILWAY_TCP_APPLICATION_PORT
+});
+
+const PORT = process.env.PORT || process.env.RAILWAY_TCP_APPLICATION_PORT || 3001;
 app.listen(PORT, async () => {
   console.log(`🚀 NFL Picks API running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
