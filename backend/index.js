@@ -240,8 +240,13 @@ async function initializeDatabase() {
   }
 }
 
-// Railway port configuration - use Railway's PORT or fallback to 3001
+// Railway TCP proxy port configuration
 const PORT = process.env.PORT || 3001;
+console.log('🔧 Port configuration:', {
+  'Railway PORT': process.env.PORT,
+  'App will listen on': PORT,
+  'Is TCP proxy port': process.env.PORT === '5432' ? 'YES' : 'NO'
+});
 console.log('🔍 Environment check:', {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
