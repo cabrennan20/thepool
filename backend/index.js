@@ -240,12 +240,12 @@ async function initializeDatabase() {
   }
 }
 
-// Railway TCP proxy port configuration
+// Railway standard HTTP deployment port configuration
 const PORT = process.env.PORT || 3001;
 console.log('🔧 Port configuration:', {
   'Railway PORT': process.env.PORT,
   'App will listen on': PORT,
-  'Is TCP proxy port': process.env.PORT === '5432' ? 'YES' : 'NO'
+  'Deployment type': 'Standard HTTP'
 });
 console.log('🔍 Environment check:', {
   NODE_ENV: process.env.NODE_ENV,
