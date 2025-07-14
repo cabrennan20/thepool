@@ -23,6 +23,9 @@ const Header: React.FC = () => {
               <a href="/picks" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                 Make Picks
               </a>
+              <a href="/recap" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                Recap
+              </a>
               <a href="/leaderboard" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                 Leaderboard
               </a>

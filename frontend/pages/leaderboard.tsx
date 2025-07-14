@@ -44,12 +44,12 @@ const LeaderboardPage: React.FC = () => {
         // Fetch weekly scores
         const weeklyData = await api.getWeeklyScores(currentWeek, currentSeason);
         
-        // Sort by total points, then by correct picks
+        // Sort by correct picks, then by win percentage
         const sortedWeekly = weeklyData.sort((a, b) => {
-          if (b.total_points !== a.total_points) {
-            return b.total_points - a.total_points;
+          if (b.correct_picks !== a.correct_picks) {
+            return b.correct_picks - a.correct_picks;
           }
-          return b.correct_picks - a.correct_picks;
+          return b.win_percentage - a.win_percentage;
         });
         
         setWeeklyLeaderboard(sortedWeekly);
@@ -57,12 +57,12 @@ const LeaderboardPage: React.FC = () => {
         // Fetch season standings
         const seasonData = await api.getSeasonStandings(currentSeason);
         
-        // Sort by total points, then by total correct
+        // Sort by correct picks, then by win percentage
         const sortedSeason = seasonData.sort((a, b) => {
-          if ((b.total_points || 0) !== (a.total_points || 0)) {
-            return (b.total_points || 0) - (a.total_points || 0);
+          if ((b.correct_picks || 0) !== (a.correct_picks || 0)) {
+            return (b.correct_picks || 0) - (a.correct_picks || 0);
           }
-          return (b.correct_picks || 0) - (a.correct_picks || 0);
+          return (b.win_percentage || 0) - (a.win_percentage || 0);
         });
         
         setSeasonLeaderboard(sortedSeason);

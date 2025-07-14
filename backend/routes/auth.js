@@ -15,7 +15,8 @@ const registerSchema = z.object({
   email: z.string().email().max(100),
   password: z.string().min(8).max(100),
   first_name: z.string().min(1).max(50).optional(),
-  last_name: z.string().min(1).max(50).optional()
+  last_name: z.string().min(1).max(50).optional(),
+  alias: z.string().min(2).max(50).regex(/^[a-zA-Z0-9\s&'-]+$/, 'Alias can only contain letters, numbers, spaces, and common symbols')
 });
 
 // JWT secret
@@ -64,17 +65,17 @@ function requireAdmin(req, res, next) {
 router.post('/register', async (req, res) => {
   try {
     const validatedData = registerSchema.parse(req.body);
-    const { username, email, password, first_name, last_name } = validatedData;
+    const { username, email, password, first_name, last_name, alias } = validatedData;
 
-    // Check if user already exists
+    // Check if user already exists (username, email, or alias)
     const existingUser = await req.db.query(
-      'SELECT user_id FROM users WHERE username = $1 OR email = $2',
-      [username, email]
+      'SELECT user_id FROM users WHERE username = $1 OR email = $2 OR alias = $3',
+      [username, email, alias]
     );
 
     if (existingUser.rows.length > 0) {
       return res.status(400).json({ 
-        error: 'Username or email already exists' 
+        error: 'Username, email, or alias already exists' 
       });
     }
 
@@ -84,10 +85,10 @@ router.post('/register', async (req, res) => {
 
     // Create user
     const result = await req.db.query(
-      `INSERT INTO users (username, email, password_hash, first_name, last_name) 
-       VALUES ($1, $2, $3, $4, $5) 
-       RETURNING user_id, username, email, first_name, last_name, is_admin, created_at`,
-      [username, email, password_hash, first_name, last_name]
+      `INSERT INTO users (username, email, password_hash, first_name, last_name, alias) 
+       VALUES ($1, $2, $3, $4, $5, $6) 
+       RETURNING user_id, username, email, first_name, last_name, alias, is_admin, created_at`,
+      [username, email, password_hash, first_name, last_name, alias]
     );
 
     const user = result.rows[0];
@@ -107,6 +108,7 @@ router.post('/register', async (req, res) => {
         email: user.email,
         first_name: user.first_name,
         last_name: user.last_name,
+        alias: user.alias,
         is_admin: user.is_admin
       },
       token
@@ -194,7 +196,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const result = await req.db.query(
-      `SELECT user_id, username, email, first_name, last_name, is_admin, created_at, last_login
+      `SELECT user_id, username, email, first_name, last_name, alias, is_admin, created_at, last_login
        FROM users WHERE user_id = $1 AND is_active = true`,
       [req.user.userId]
     );

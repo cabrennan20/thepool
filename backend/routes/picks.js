@@ -6,7 +6,8 @@ const router = express.Router();
 // Validation schemas
 const pickSchema = z.object({
   game_id: z.number().int().positive(),
-  selected_team: z.string().min(2).max(10)
+  selected_team: z.string().min(2).max(10),
+  tiebreaker_points: z.number().int().min(0).max(200).optional()
 });
 
 const picksSubmissionSchema = z.object({
@@ -142,10 +143,10 @@ router.post('/', authenticateToken, async (req, res) => {
     
     for (const pick of picks) {
       const result = await client.query(
-        `INSERT INTO picks (user_id, game_id, selected_team) 
-         VALUES ($1, $2, $3) 
-         RETURNING pick_id, user_id, game_id, selected_team, pick_time`,
-        [userId, pick.game_id, pick.selected_team]
+        `INSERT INTO picks (user_id, game_id, selected_team, tiebreaker_points) 
+         VALUES ($1, $2, $3, $4) 
+         RETURNING pick_id, user_id, game_id, selected_team, tiebreaker_points, pick_time`,
+        [userId, pick.game_id, pick.selected_team, pick.tiebreaker_points || null]
       );
       
       insertedPicks.push(result.rows[0]);
@@ -213,16 +214,15 @@ router.put('/:pickId', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid team selection' });
     }
 
-    // No additional validation needed for simplified picks
-
     // Update pick
     const updateResult = await req.db.query(
       `UPDATE picks 
        SET selected_team = COALESCE($1, selected_team),
+           tiebreaker_points = COALESCE($2, tiebreaker_points),
            pick_time = CURRENT_TIMESTAMP
-       WHERE pick_id = $2
+       WHERE pick_id = $3
        RETURNING *`,
-      [selected_team, pickId]
+      [selected_team, req.body.tiebreaker_points, pickId]
     );
 
     res.json({
@@ -301,7 +301,7 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
       JOIN users u ON p.user_id = u.user_id
       JOIN games g ON p.game_id = g.game_id
       WHERE g.week = $1 AND g.season = $2
-      ORDER BY u.username, p.confidence_points DESC`,
+      ORDER BY u.username, p.pick_time ASC`,
       [week, season]
     );
 

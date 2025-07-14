@@ -157,16 +157,16 @@ router.get('/:gameId/picks', async (req, res) => {
       `SELECT 
         p.pick_id,
         p.selected_team,
-        p.confidence_points,
+        p.tiebreaker_points,
         p.is_correct,
-        p.points_earned,
         u.username,
+        u.alias,
         u.first_name,
         u.last_name
       FROM picks p
       JOIN users u ON p.user_id = u.user_id
       WHERE p.game_id = $1
-      ORDER BY p.confidence_points DESC, u.username`,
+      ORDER BY u.alias, u.username`,
       [gameId]
     );
 
@@ -235,8 +235,7 @@ router.get('/week/:week/stats', async (req, res) => {
       `SELECT 
         COUNT(DISTINCT p.user_id) as users_with_picks,
         COUNT(p.pick_id) as total_picks,
-        COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_picks,
-        AVG(CASE WHEN p.is_correct IS NOT NULL THEN p.confidence_points::DECIMAL END) as avg_confidence
+        COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_picks
       FROM picks p
       JOIN games g ON p.game_id = g.game_id
       WHERE g.week = $1 AND g.season = $2`,
@@ -262,10 +261,7 @@ router.get('/week/:week/stats', async (req, res) => {
         correct_picks: parseInt(pickStats.correct_picks) || 0,
         accuracy_rate: pickStats.total_picks > 0 
           ? ((pickStats.correct_picks || 0) / pickStats.total_picks * 100).toFixed(2)
-          : '0.00',
-        avg_confidence: pickStats.avg_confidence 
-          ? parseFloat(pickStats.avg_confidence).toFixed(1)
-          : '0.0'
+          : '0.00'
       }
     });
 

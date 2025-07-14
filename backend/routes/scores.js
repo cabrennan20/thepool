@@ -16,21 +16,20 @@ router.get('/weekly', async (req, res) => {
       `SELECT 
         ws.user_id,
         u.username,
+        u.alias,
         u.first_name,
         u.last_name,
         ws.week,
         ws.season,
         ws.correct_picks,
         ws.total_picks,
-        ws.total_points,
-        ws.possible_points,
         ws.win_percentage,
         ws.weekly_rank,
-        RANK() OVER (ORDER BY ws.total_points DESC, ws.correct_picks DESC, u.username) as current_rank
+        RANK() OVER (ORDER BY ws.correct_picks DESC, ws.win_percentage DESC, u.alias) as current_rank
       FROM weekly_scores ws
       JOIN users u ON ws.user_id = u.user_id
       WHERE ws.week = $1 AND ws.season = $2 AND u.is_active = true
-      ORDER BY ws.total_points DESC, ws.correct_picks DESC, u.username`,
+      ORDER BY ws.correct_picks DESC, ws.win_percentage DESC, u.alias`,
       [week, season]
     );
 
@@ -55,30 +54,28 @@ router.get('/season', async (req, res) => {
       `SELECT 
         u.user_id,
         u.username,
+        u.alias,
         u.first_name,
         u.last_name,
         COUNT(ws.week) as weeks_played,
         COALESCE(SUM(ws.correct_picks), 0) as total_correct,
         COALESCE(SUM(ws.total_picks), 0) as total_games,
-        COALESCE(SUM(ws.total_points), 0) as total_points,
-        COALESCE(SUM(ws.possible_points), 0) as total_possible,
         CASE 
           WHEN SUM(ws.total_picks) > 0 THEN 
             ROUND((SUM(ws.correct_picks)::DECIMAL / SUM(ws.total_picks)) * 100, 2)
           ELSE 0 
         END as season_win_percentage,
         RANK() OVER (
-          ORDER BY SUM(ws.total_points) DESC, 
-                   SUM(ws.correct_picks) DESC, 
+          ORDER BY SUM(ws.correct_picks) DESC, 
                    COUNT(ws.week) DESC,
-                   u.username
+                   u.alias
         ) as season_rank
       FROM users u
       LEFT JOIN weekly_scores ws ON u.user_id = ws.user_id AND ws.season = $1
       WHERE u.is_active = true
-      GROUP BY u.user_id, u.username, u.first_name, u.last_name
+      GROUP BY u.user_id, u.username, u.alias, u.first_name, u.last_name
       HAVING COUNT(ws.week) > 0 OR u.is_admin = true
-      ORDER BY total_points DESC, total_correct DESC, weeks_played DESC, u.username`,
+      ORDER BY total_correct DESC, weeks_played DESC, u.alias`,
       [season]
     );
 
@@ -110,8 +107,6 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
         week,
         correct_picks,
         total_picks,
-        total_points,
-        possible_points,
         win_percentage,
         weekly_rank
       FROM weekly_scores
@@ -126,8 +121,6 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
         COUNT(week) as weeks_played,
         COALESCE(SUM(correct_picks), 0) as total_correct,
         COALESCE(SUM(total_picks), 0) as total_games,
-        COALESCE(SUM(total_points), 0) as total_points,
-        COALESCE(SUM(possible_points), 0) as total_possible,
         CASE 
           WHEN SUM(total_picks) > 0 THEN 
             ROUND((SUM(correct_picks)::DECIMAL / SUM(total_picks)) * 100, 2)
@@ -143,7 +136,6 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
       `WITH season_totals AS (
         SELECT 
           user_id,
-          SUM(total_points) as total_points,
           SUM(correct_picks) as total_correct,
           COUNT(week) as weeks_played
         FROM weekly_scores
@@ -152,8 +144,7 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
       )
       SELECT 
         RANK() OVER (
-          ORDER BY total_points DESC, 
-                   total_correct DESC, 
+          ORDER BY total_correct DESC, 
                    weeks_played DESC
         ) as season_rank
       FROM season_totals
@@ -174,8 +165,6 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
         weeks_played: parseInt(seasonTotals.weeks_played),
         total_correct: parseInt(seasonTotals.total_correct),
         total_games: parseInt(seasonTotals.total_games),
-        total_points: parseInt(seasonTotals.total_points),
-        total_possible: parseInt(seasonTotals.total_possible)
       }
     });
 
@@ -214,15 +203,6 @@ router.post('/calculate/:week', authenticateToken, async (req, res) => {
                END
              ELSE NULL
            END,
-           points_earned = CASE 
-             WHEN g.game_status = 'final' THEN
-               CASE 
-                 WHEN g.home_score > g.away_score AND p.selected_team = g.home_team THEN p.confidence_points
-                 WHEN g.away_score > g.home_score AND p.selected_team = g.away_team THEN p.confidence_points
-                 ELSE 0
-               END
-             ELSE NULL
-           END
          FROM games g 
          WHERE p.game_id = g.game_id 
          AND g.week = $1 
@@ -247,9 +227,7 @@ router.post('/calculate/:week', authenticateToken, async (req, res) => {
         const scoreResult = await client.query(
           `SELECT 
             COUNT(p.pick_id) as total_picks,
-            COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_picks,
-            COALESCE(SUM(CASE WHEN p.is_correct = true THEN p.confidence_points ELSE 0 END), 0) as total_points,
-            COALESCE(SUM(p.confidence_points), 0) as possible_points
+            COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_picks
           FROM picks p
           JOIN games g ON p.game_id = g.game_id
           WHERE p.user_id = $1 
@@ -268,19 +246,16 @@ router.post('/calculate/:week', authenticateToken, async (req, res) => {
         await client.query(
           `INSERT INTO weekly_scores (
             user_id, week, season, correct_picks, total_picks, 
-            total_points, possible_points, win_percentage
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            win_percentage
+          ) VALUES ($1, $2, $3, $4, $5, $6)
           ON CONFLICT (user_id, season, week) 
           DO UPDATE SET
             correct_picks = EXCLUDED.correct_picks,
             total_picks = EXCLUDED.total_picks,
-            total_points = EXCLUDED.total_points,
-            possible_points = EXCLUDED.possible_points,
             win_percentage = EXCLUDED.win_percentage`,
           [
             user_id, week, season, 
             scores.correct_picks, scores.total_picks,
-            scores.total_points, scores.possible_points, 
             winPercentage
           ]
         );
@@ -295,7 +270,7 @@ router.post('/calculate/:week', authenticateToken, async (req, res) => {
          FROM (
            SELECT 
              user_id,
-             RANK() OVER (ORDER BY total_points DESC, correct_picks DESC) as rank
+             RANK() OVER (ORDER BY correct_picks DESC, win_percentage DESC) as rank
            FROM weekly_scores 
            WHERE week = $1 AND season = $2
          ) ranked

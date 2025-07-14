@@ -9,6 +9,7 @@ const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [alias, setAlias] = useState('');
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerLoading, setRegisterLoading] = useState(false);
   const { login, isLoading, error } = useAuth();
@@ -32,7 +33,8 @@ const LoginForm: React.FC = () => {
         email,
         password,
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
+        alias
       });
       
       // Auto-login after successful registration
@@ -101,6 +103,19 @@ const LoginForm: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Member Alias (how you'll appear to others)"
+                    value={alias}
+                    onChange={(e) => setAlias(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500 mt-1 px-1">
+                    This is your display name in the league (e.g., "Team Ram Rod", "Clammy Twatkins")
+                  </p>
                 </div>
               </>
             )}

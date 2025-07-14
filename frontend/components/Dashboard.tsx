@@ -11,7 +11,6 @@ interface GameWithLogos extends Game {
 interface UserStats {
   total_correct: number;
   total_games: number;
-  total_points: number;
   win_percentage: number;
   season_rank: number;
   weeks_played: number;
@@ -26,7 +25,6 @@ const Dashboard: React.FC = () => {
   const [userStats, setUserStats] = useState<UserStats>({
     total_correct: 0,
     total_games: 0,
-    total_points: 0,
     win_percentage: 0,
     season_rank: 0,
     weeks_played: 0

@@ -9,6 +9,7 @@ interface User {
   email: string;
   first_name?: string;
   last_name?: string;
+  alias?: string;
   is_admin: boolean;
   is_active?: boolean;
 }
@@ -31,19 +32,48 @@ interface Pick {
   user_id: number;
   game_id: number;
   selected_team: string;
+  tiebreaker_points?: number;
   is_correct?: boolean;
 }
 
 interface WeeklyScore {
   user_id: number;
   username: string;
+  alias?: string;
   week: number;
   correct_picks: number;
   total_picks: number;
-  total_points: number;
-  possible_points: number;
   win_percentage: number;
   weekly_rank?: number;
+}
+
+interface RecapData {
+  user_id: number;
+  alias: string;
+  username: string;
+  picks: Record<number, string | null>; // game_id -> selected_team
+  tiebreaker_points: number | null;
+}
+
+interface RecapResponse {
+  week: number;
+  season: number;
+  picks_closed: boolean;
+  games: Game[];
+  final_game: Game;
+  recap_data: RecapData[];
+  total_users: number;
+  total_games: number;
+}
+
+interface RecapWeek {
+  week: number;
+  first_game_date: string;
+  last_game_date: string;
+  game_count: number;
+  completed_games: number;
+  picks_closed: boolean;
+  recap_available: boolean;
 }
 
 class ApiClient {
@@ -110,6 +140,7 @@ class ApiClient {
     password: string;
     first_name?: string;
     last_name?: string;
+    alias: string;
   }): Promise<{ user: User; token: string }> {
     const data = await this.request<{ user: User; token: string }>('/auth/register', {
       method: 'POST',
@@ -188,7 +219,6 @@ class ApiClient {
   async getUserStats(userId: number, season?: number): Promise<{
     total_correct: number;
     total_games: number;
-    total_points: number;
     win_percentage: number;
     season_rank: number;
     weeks_played: number;
@@ -197,6 +227,30 @@ class ApiClient {
     if (season) params.append('season', season.toString());
     
     return this.request(`/users/${userId}/stats?${params.toString()}`);
+  }
+
+  // Recap functions
+  async getRecapData(week: number, season?: number): Promise<RecapResponse> {
+    const params = new URLSearchParams();
+    if (season) params.append('season', season.toString());
+    
+    return this.request<RecapResponse>(`/recap/week/${week}?${params.toString()}`);
+  }
+
+  async getRecapWeeks(season: number): Promise<{ season: number; weeks: RecapWeek[] }> {
+    return this.request<{ season: number; weeks: RecapWeek[] }>(`/recap/weeks/${season}`);
+  }
+
+  async getUserRecapData(userId: number, week: number, season?: number): Promise<{
+    user_id: number;
+    week: number;
+    season: number;
+    picks: any[];
+  }> {
+    const params = new URLSearchParams();
+    if (season) params.append('season', season.toString());
+    
+    return this.request(`/recap/user/${userId}/week/${week}?${params.toString()}`);
   }
 
   // System
@@ -239,4 +293,4 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
-export type { User, Game, Pick, WeeklyScore };
+export type { User, Game, Pick, WeeklyScore, RecapData, RecapResponse, RecapWeek };
