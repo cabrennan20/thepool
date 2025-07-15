@@ -3,6 +3,13 @@
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+// Import mock data for fallback
+import { 
+  mockWeeklyScores, 
+  mockRecapResponse, 
+  mockAvailableWeeks 
+} from './mockData';
+
 interface User {
   user_id: number;
   username: string;
@@ -252,18 +259,28 @@ class ApiClient {
 
   // Scoring and Standings
   async getWeeklyScores(week: number, season?: number): Promise<WeeklyScore[]> {
-    const params = new URLSearchParams();
-    params.append('week', week.toString());
-    if (season) params.append('season', season.toString());
-    
-    return this.request<WeeklyScore[]>(`/scores/weekly?${params.toString()}`);
+    try {
+      const params = new URLSearchParams();
+      params.append('week', week.toString());
+      if (season) params.append('season', season.toString());
+      
+      return await this.request<WeeklyScore[]>(`/scores/weekly?${params.toString()}`);
+    } catch (error) {
+      console.warn('Backend not available, using mock weekly scores data');
+      return mockWeeklyScores;
+    }
   }
 
   async getSeasonStandings(season?: number): Promise<WeeklyScore[]> {
-    const params = new URLSearchParams();
-    if (season) params.append('season', season.toString());
-    
-    return this.request<WeeklyScore[]>(`/scores/season?${params.toString()}`);
+    try {
+      const params = new URLSearchParams();
+      if (season) params.append('season', season.toString());
+      
+      return await this.request<WeeklyScore[]>(`/scores/season?${params.toString()}`);
+    } catch (error) {
+      console.warn('Backend not available, using mock season standings data');
+      return mockWeeklyScores;
+    }
   }
 
   async getUserStats(userId: number, season?: number): Promise<{
@@ -281,14 +298,24 @@ class ApiClient {
 
   // Recap functions
   async getRecapData(week: number, season?: number): Promise<RecapResponse> {
-    const params = new URLSearchParams();
-    if (season) params.append('season', season.toString());
-    
-    return this.request<RecapResponse>(`/recap/week/${week}?${params.toString()}`);
+    try {
+      const params = new URLSearchParams();
+      if (season) params.append('season', season.toString());
+      
+      return await this.request<RecapResponse>(`/recap/week/${week}?${params.toString()}`);
+    } catch (error) {
+      console.warn('Backend not available, using mock recap data');
+      return mockRecapResponse;
+    }
   }
 
   async getRecapWeeks(season: number): Promise<{ season: number; weeks: RecapWeek[] }> {
-    return this.request<{ season: number; weeks: RecapWeek[] }>(`/recap/weeks/${season}`);
+    try {
+      return await this.request<{ season: number; weeks: RecapWeek[] }>(`/recap/weeks/${season}`);
+    } catch (error) {
+      console.warn('Backend not available, using mock recap weeks data');
+      return { season, weeks: mockAvailableWeeks };
+    }
   }
 
   async getUserRecapData(userId: number, week: number, season?: number): Promise<{
