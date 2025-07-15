@@ -14,8 +14,8 @@ export const hasValidToken = (): boolean => {
     const payload = JSON.parse(atob(token.split('.')[1]));
     const now = Date.now() / 1000;
     
-    // If token expires within next 1 minute, consider it invalid
-    return payload.exp && payload.exp > (now + 60);
+    // Only consider token invalid if it's actually expired (not within 1 minute)
+    return payload.exp && payload.exp > now;
   } catch (error) {
     // Invalid token format
     return false;

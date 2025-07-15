@@ -45,6 +45,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           try {
             const currentUser = await api.getCurrentUser();
             setUser(currentUser);
+            console.log('Auth restored from stored token');
           } catch (error) {
             // Token is invalid, clear it
             console.warn('Stored token is invalid, clearing auth data');
