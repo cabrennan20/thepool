@@ -171,27 +171,28 @@ const PicksPage: React.FC = () => {
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Make Your Weekly Picks</h1>
-          <p className="mt-2 text-sm sm:text-base text-gray-600">
-            Select your pick for each game. Pick the team you think will win!
-          </p>
-          
-          {/* Progress indicator on mobile */}
-          {games.length > 0 && (
-            <div className="mt-4 sm:hidden">
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>Progress</span>
-                <span>{picks.length}/{games.length} picks</span>
-              </div>
-              <div className="mt-1 w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${(picks.length / games.length) * 100}%` }}
-                ></div>
-              </div>
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Weekly Picks</h1>
             </div>
-          )}
+            
+            {/* Progress indicator - right side on desktop, below on mobile */}
+            {games.length > 0 && (
+              <div className="mt-3 sm:mt-0 sm:ml-8">
+                <div className="flex items-center justify-between sm:justify-end text-sm text-gray-500">
+                  <span className="sm:hidden">Progress</span>
+                  <span>{picks.length}/{games.length} picks</span>
+                </div>
+                <div className="mt-1 w-full sm:w-32 bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${(picks.length / games.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Quick Pick Mode Toggle (Mobile Only) */}
@@ -212,7 +213,7 @@ const PicksPage: React.FC = () => {
         {error ? (
           <div className="text-red-600 text-center py-4">{error}</div>
         ) : (
-          <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
+          <div className="space-y-3 sm:space-y-4 pb-20 sm:pb-0">
             {games.map((game, index) => {
               const currentPick = getPick(game.game_id);
               const isQuickMode = quickPickMode && isMobile;
@@ -225,8 +226,7 @@ const PicksPage: React.FC = () => {
                     {/* Quick Pick Card - Mobile Only */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2">
-                        <div className="text-xs font-medium text-gray-500">Game {index + 1}</div>
-                        <div className="text-xs text-gray-400">{formatDate(game.game_date).split(',')[0]}</div>
+                        <div className="text-xs text-gray-400">{formatDate(game.game_date)}</div>
                       </div>
                       {currentPick && (
                         <div className="flex items-center space-x-1 text-green-600">
@@ -296,9 +296,9 @@ const PicksPage: React.FC = () => {
 
               // Regular desktop/tablet view
               return (
-                <div key={game.game_id} className="bg-white shadow rounded-lg p-4 sm:p-6">
+                <div key={game.game_id} className="bg-white shadow rounded-lg p-3 sm:p-4">
                   {/* Mobile-first Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 mb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 mb-3">
                     {/* Teams Section */}
                     <div className="flex items-center justify-center sm:justify-start space-x-3 sm:space-x-6">
                       {/* Away Team */}
@@ -342,14 +342,14 @@ const PicksPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                     {/* Team Selection */}
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Pick Winner
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label className={`flex items-center p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label className={`flex items-center p-2 sm:p-3 border-2 rounded-lg cursor-pointer transition-colors ${
                           currentPick?.selected_team === game.away_team 
                             ? 'border-indigo-500 bg-indigo-50' 
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -372,7 +372,7 @@ const PicksPage: React.FC = () => {
                           <span className="font-medium text-sm sm:text-base">{game.away_team}</span>
                         </label>
                         
-                        <label className={`flex items-center p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                        <label className={`flex items-center p-2 sm:p-3 border-2 rounded-lg cursor-pointer transition-colors ${
                           currentPick?.selected_team === game.home_team 
                             ? 'border-indigo-500 bg-indigo-50' 
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -399,19 +399,19 @@ const PicksPage: React.FC = () => {
 
                     {/* Pick Summary */}
                     <div className="lg:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Your Pick
                       </label>
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {currentPick ? (
-                          <div className="p-3 bg-green-100 border border-green-200 rounded-lg">
+                          <div className="p-2 bg-green-100 border border-green-200 rounded-lg">
                             <div className="flex items-center space-x-2">
                               <span className="text-green-600 font-medium">✓</span>
                               <span className="font-medium text-sm sm:text-base">{currentPick.selected_team}</span>
                             </div>
                           </div>
                         ) : (
-                          <div className="p-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
+                          <div className="p-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
                             <div className="text-sm">No pick made</div>
                           </div>
                         )}
