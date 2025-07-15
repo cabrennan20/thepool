@@ -24,6 +24,19 @@ const PicksPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
   const [tiebreakerPoints, setTiebreakerPoints] = useState<number | ''>('');
+  const [quickPickMode, setQuickPickMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Handle mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -187,13 +200,107 @@ const PicksPage: React.FC = () => {
           )}
         </div>
 
+        {/* Quick Pick Mode Toggle (Mobile Only) */}
+        <div className="sm:hidden mb-4">
+          <div className="flex items-center justify-center space-x-4 bg-white rounded-lg p-3 shadow">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                onChange={(e) => setQuickPickMode(e.target.checked)}
+              />
+              <span className="text-sm font-medium text-gray-700">Quick Pick Mode</span>
+            </label>
+            <div className="text-xs text-gray-500">Tap teams to pick quickly</div>
+          </div>
+        </div>
+
         {error ? (
           <div className="text-red-600 text-center py-4">{error}</div>
         ) : (
           <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
-            {games.map((game) => {
+            {games.map((game, index) => {
               const currentPick = getPick(game.game_id);
+              const isQuickMode = quickPickMode && isMobile;
 
+              if (isQuickMode) {
+                return (
+                  <div key={game.game_id} className="bg-white shadow rounded-lg p-3 border-l-4 ${
+                    currentPick ? 'border-green-500' : 'border-gray-300'
+                  }">                    
+                    {/* Quick Pick Card - Mobile Only */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="text-xs font-medium text-gray-500">Game {index + 1}</div>
+                        <div className="text-xs text-gray-400">{formatDate(game.game_date).split(',')[0]}</div>
+                      </div>
+                      {currentPick && (
+                        <div className="flex items-center space-x-1 text-green-600">
+                          <span className="text-xs">✓</span>
+                          <span className="text-xs font-medium">Picked</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Large Tap Targets */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => updatePick(game.game_id, game.away_team)}
+                        className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                          currentPick?.selected_team === game.away_team
+                            ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                            : 'border-gray-200 hover:border-gray-300 active:scale-95'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center space-y-2">
+                          {game.away_logo && (
+                            <img 
+                              src={game.away_logo} 
+                              alt={game.away_team}
+                              className="w-12 h-12 object-contain"
+                            />
+                          )}
+                          <div className="text-sm font-medium text-center">{game.away_team}</div>
+                          <div className="text-xs text-gray-500">@</div>
+                        </div>
+                      </button>
+                      
+                      <button
+                        onClick={() => updatePick(game.game_id, game.home_team)}
+                        className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                          currentPick?.selected_team === game.home_team
+                            ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                            : 'border-gray-200 hover:border-gray-300 active:scale-95'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center space-y-2">
+                          {game.home_logo && (
+                            <img 
+                              src={game.home_logo} 
+                              alt={game.home_team}
+                              className="w-12 h-12 object-contain"
+                            />
+                          )}
+                          <div className="text-sm font-medium text-center">{game.home_team}</div>
+                          <div className="text-xs text-gray-500">HOME</div>
+                        </div>
+                      </button>
+                    </div>
+                    
+                    {/* Show picked team prominently */}
+                    {currentPick && (
+                      <div className="mt-3 p-2 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex items-center justify-center space-x-2">
+                          <span className="text-green-600 text-sm">✓</span>
+                          <span className="text-sm font-medium text-green-800">Picked: {currentPick.selected_team}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              // Regular desktop/tablet view
               return (
                 <div key={game.game_id} className="bg-white shadow rounded-lg p-4 sm:p-6">
                   {/* Mobile-first Header */}
@@ -357,19 +464,65 @@ const PicksPage: React.FC = () => {
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* Submit Button - Enhanced for Quick Pick Mode */}
             <div className="sticky bottom-4 sm:static sm:bottom-auto bg-white sm:bg-transparent p-4 sm:p-0 border-t sm:border-t-0 border-gray-200 sm:border-gray-200 -mx-4 sm:mx-0 sm:text-center">
+              {/* Quick Pick Floating Action Button (Mobile) */}
+              {quickPickMode && isMobile && (
+                <div className="fixed bottom-6 right-6 z-50">
+                  <button
+                    onClick={submitPicks}
+                    disabled={picks.length === 0 || submitting}
+                    className={`w-16 h-16 rounded-full shadow-lg flex items-center justify-center text-white font-bold transition-all duration-200 ${
+                      picks.length === games.length 
+                        ? 'bg-green-600 hover:bg-green-700 animate-pulse' 
+                        : picks.length > 0 
+                        ? 'bg-indigo-600 hover:bg-indigo-700' 
+                        : 'bg-gray-400'
+                    }`}
+                  >
+                    {submitting ? (
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : saved ? (
+                      <span className="text-2xl">✓</span>
+                    ) : (
+                      <div className="flex flex-col items-center text-xs">
+                        <span>{picks.length}</span>
+                        <span>/</span>
+                        <span>{games.length}</span>
+                      </div>
+                    )}
+                  </button>
+                  
+                  {/* Completion Badge */}
+                  {picks.length === games.length && !saved && (
+                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center animate-bounce">
+                      !
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Regular Submit Button */}
               <button
                 onClick={submitPicks}
                 disabled={picks.length === 0 || submitting}
-                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-6 sm:px-8 py-3 rounded-md font-medium text-sm sm:text-base"
+                className={`w-full sm:w-auto text-white px-6 sm:px-8 py-3 rounded-md font-medium text-sm sm:text-base transition-colors ${
+                  quickPickMode && isMobile 
+                    ? 'hidden' 
+                    : picks.length === games.length 
+                    ? 'bg-green-600 hover:bg-green-700 animate-pulse' 
+                    : 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400'
+                }`}
               >
                 {submitting ? 'Submitting...' : saved ? 'Picks Saved!' : `Submit Picks (${picks.length}/${games.length})`}
               </button>
               
-              {picks.length > 0 && (
+              {picks.length > 0 && !(quickPickMode && isMobile) && (
                 <div className="mt-2 text-xs sm:text-sm text-gray-500 text-center">
                   {picks.length} of {games.length} games picked
+                  {picks.length === games.length && (
+                    <span className="ml-2 text-green-600 font-medium">- All picks complete! 🎉</span>
+                  )}
                 </div>
               )}
             </div>

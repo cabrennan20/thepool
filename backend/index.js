@@ -45,6 +45,11 @@ pool.on('error', (err) => {
   console.error('❌ PostgreSQL connection error:', err);
 });
 
+// Initialize notification service
+const NotificationService = require('./services/notificationService');
+const notificationService = new NotificationService(pool);
+notificationService.initialize();
+
 // Import route handlers
 const { router: authRoutes } = require('./routes/auth');
 const gameRoutes = require('./routes/games');
@@ -53,6 +58,7 @@ const scoreRoutes = require('./routes/scores');
 const adminRoutes = require('./routes/admin');
 const systemRoutes = require('./routes/system');
 const recapRoutes = require('./routes/recap');
+const notificationRoutes = require('./routes/notifications');
 
 // Add database pool to request object
 app.use((req, res, next) => {
@@ -68,6 +74,7 @@ app.use('/api/scores', scoreRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/recap', recapRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {

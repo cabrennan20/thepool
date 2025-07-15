@@ -14,6 +14,20 @@ const RecapPage: React.FC = () => {
   const [error, setError] = useState('');
   const [filterMember, setFilterMember] = useState('');
   const [filterGame, setFilterGame] = useState<number | null>(null);
+  const [mobileView, setMobileView] = useState<'grid' | 'cards' | 'member'>('cards');
+  const [selectedMember, setSelectedMember] = useState<string>('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Handle mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchAvailableWeeks = async () => {
@@ -194,9 +208,68 @@ const RecapPage: React.FC = () => {
           </div>
         )}
 
-        {/* Recap Grid */}
+        {/* Mobile View Selector */}
+        {recapData && !loading && isMobile && (
+          <div className="mb-4 bg-white rounded-lg shadow p-4 print:hidden">
+            <div className="flex flex-col space-y-3">
+              <label className="text-sm font-medium text-gray-700">Mobile View:</label>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setMobileView('cards')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    mobileView === 'cards' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Cards
+                </button>
+                <button
+                  onClick={() => setMobileView('member')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    mobileView === 'member' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  By Member
+                </button>
+                <button
+                  onClick={() => setMobileView('grid')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    mobileView === 'grid' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Grid
+                </button>
+              </div>
+              
+              {/* Member Selector for 'member' view */}
+              {mobileView === 'member' && (
+                <select
+                  value={selectedMember}
+                  onChange={(e) => setSelectedMember(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                >
+                  <option value="">Select a member...</option>
+                  {filteredRecapData.map(member => (
+                    <option key={member.user_id} value={member.alias}>
+                      {member.alias}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Recap Content */}
         {recapData && !loading && (
-          <div className="bg-white shadow rounded-lg overflow-hidden print:shadow-none print:rounded-none">
+          <div className={`bg-white shadow rounded-lg overflow-hidden print:shadow-none print:rounded-none ${
+            isMobile && mobileView !== 'grid' ? 'hidden md:block' : ''
+          }`}>
             {/* Summary Info */}
             <div className="p-4 border-b border-gray-200 print:p-2">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
@@ -215,16 +288,22 @@ const RecapPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Grid Container */}
+            {/* Grid Container - Enhanced for mobile */}
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 print:text-xs">
+              <table className={`min-w-full divide-y divide-gray-200 print:text-xs ${
+                isMobile ? 'text-xs' : ''
+              }`}>
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="sticky left-0 z-10 bg-gray-50 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
+                    <th className={`sticky left-0 z-10 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 ${
+                      isMobile ? 'px-2 py-2 min-w-[80px]' : 'px-3 py-3'
+                    }`}>
                       Member
                     </th>
                     {filteredGames.map(game => (
-                      <th key={game.game_id} className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 min-w-[100px]">
+                      <th key={game.game_id} className={`text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 ${
+                        isMobile ? 'px-1 py-2 min-w-[80px]' : 'px-2 py-3 min-w-[100px]'
+                      }`}>
                         <div className="space-y-1">
                           <div>{game.away_team}</div>
                           <div className="text-gray-400">@</div>
@@ -240,21 +319,27 @@ const RecapPage: React.FC = () => {
                         </div>
                       </th>
                     ))}
-                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tiebreaker
+                    <th className={`text-center text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                      isMobile ? 'px-2 py-2' : 'px-3 py-3'
+                    }`}>
+                      {isMobile ? 'TB' : 'Tiebreaker'}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRecapData.map((member, idx) => (
                     <tr key={member.user_id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="sticky left-0 z-10 px-3 py-4 text-sm font-medium text-gray-900 border-r border-gray-200 bg-inherit">
-                        {member.alias}
+                      <td className={`sticky left-0 z-10 font-medium text-gray-900 border-r border-gray-200 bg-inherit ${
+                        isMobile ? 'px-2 py-2 text-xs' : 'px-3 py-4 text-sm'
+                      }`}>
+                        <div className={isMobile ? 'truncate max-w-[70px]' : ''}>{member.alias}</div>
                       </td>
                       {filteredGames.map(game => {
                         const pick = member.picks[game.game_id];
                         return (
-                          <td key={game.game_id} className="px-2 py-4 text-sm text-center border-r border-gray-200">
+                          <td key={game.game_id} className={`text-center border-r border-gray-200 ${
+                            isMobile ? 'px-1 py-2 text-xs' : 'px-2 py-4 text-sm'
+                          }`}>
                             {pick ? (
                               <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                                 pick === game.home_team 
@@ -269,7 +354,9 @@ const RecapPage: React.FC = () => {
                           </td>
                         );
                       })}
-                      <td className="px-3 py-4 text-sm text-center">
+                      <td className={`text-center ${
+                        isMobile ? 'px-2 py-2 text-xs' : 'px-3 py-4 text-sm'
+                      }`}>
                         {member.tiebreaker_points !== null ? (
                           <span className="font-medium">{member.tiebreaker_points}</span>
                         ) : (
@@ -292,6 +379,129 @@ const RecapPage: React.FC = () => {
                   Tiebreaker: Total points in {recapData.final_game.away_team} @ {recapData.final_game.home_team}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Card View */}
+        {recapData && !loading && isMobile && mobileView === 'cards' && (
+          <div className="space-y-4 md:hidden">
+            {filteredGames.map(game => (
+              <div key={game.game_id} className="bg-white shadow rounded-lg p-4">
+                {/* Game Header */}
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-center">
+                      <div className="font-medium text-sm">{game.away_team}</div>
+                      <div className="text-xs text-gray-500">@</div>
+                      <div className="font-medium text-sm">{game.home_team}</div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 text-right">
+                    {new Date(game.game_date).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                </div>
+                
+                {/* Picks Grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  {filteredRecapData.map(member => {
+                    const pick = member.picks[game.game_id];
+                    return (
+                      <div key={member.user_id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <span className="text-sm font-medium text-gray-900 truncate pr-2">{member.alias}</span>
+                        {pick ? (
+                          <span className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${
+                            pick === game.home_team 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {pick}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">No Pick</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Mobile Member View */}
+        {recapData && !loading && isMobile && mobileView === 'member' && selectedMember && (
+          <div className="md:hidden">
+            {(() => {
+              const member = filteredRecapData.find(m => m.alias === selectedMember);
+              if (!member) return null;
+              
+              return (
+                <div className="bg-white shadow rounded-lg p-4">
+                  {/* Member Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900">{member.alias}</h3>
+                    {member.tiebreaker_points !== null && (
+                      <div className="text-sm text-gray-600">
+                        Tiebreaker: <span className="font-medium">{member.tiebreaker_points}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Member's Picks */}
+                  <div className="space-y-3">
+                    {filteredGames.map(game => {
+                      const pick = member.picks[game.game_id];
+                      return (
+                        <div key={game.game_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm text-gray-900">
+                              {game.away_team} @ {game.home_team}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(game.game_date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                          <div className="ml-3">
+                            {pick ? (
+                              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                pick === game.home_team 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : 'bg-green-100 text-green-800'
+                              }`}>
+                                {pick}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-sm">No Pick</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()
+            }
+          </div>
+        )}
+
+        {/* Mobile Member Selection Prompt */}
+        {recapData && !loading && isMobile && mobileView === 'member' && !selectedMember && (
+          <div className="md:hidden bg-white shadow rounded-lg p-8 text-center">
+            <div className="text-gray-500">
+              <div className="text-lg mb-2">👆</div>
+              <div>Select a member above to view their picks</div>
             </div>
           </div>
         )}

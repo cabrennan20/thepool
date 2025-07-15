@@ -76,6 +76,17 @@ interface RecapWeek {
   recap_available: boolean;
 }
 
+interface NotificationPreferences {
+  user_id: number;
+  email_pick_reminders: boolean;
+  email_weekly_recap: boolean;
+  email_urgent_reminders: boolean;
+  sms_pick_reminders: boolean;
+  reminder_hours_before: number;
+  created_at: string;
+  updated_at: string;
+}
+
 class ApiClient {
   private token: string | null = null;
 
@@ -292,7 +303,30 @@ class ApiClient {
       body: JSON.stringify(updates),
     });
   }
+
+  // Notifications
+  async getNotificationPreferences(): Promise<NotificationPreferences> {
+    return this.request<NotificationPreferences>('/notifications/preferences');
+  }
+
+  async updateNotificationPreferences(preferences: Partial<NotificationPreferences>): Promise<{ message: string; preferences: NotificationPreferences }> {
+    return this.request<{ message: string; preferences: NotificationPreferences }>('/notifications/preferences', {
+      method: 'PUT',
+      body: JSON.stringify(preferences),
+    });
+  }
+
+  async testEmailConfiguration(): Promise<{ success: boolean; message?: string; error?: string }> {
+    return this.request<{ success: boolean; message?: string; error?: string }>('/notifications/test-email');
+  }
+
+  async sendTestEmail(email: string): Promise<{ success: boolean; message: string; details: string }> {
+    return this.request<{ success: boolean; message: string; details: string }>('/notifications/test-email', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
 }
 
 export const api = new ApiClient();
-export type { User, Game, Pick, WeeklyScore, RecapData, RecapResponse, RecapWeek };
+export type { User, Game, Pick, WeeklyScore, RecapData, RecapResponse, RecapWeek, NotificationPreferences };
