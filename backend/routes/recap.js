@@ -139,6 +139,51 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
       };
     });
 
+    // Calculate pick percentages for each game
+    const pickPercentages = {};
+    
+    games.forEach(game => {
+      const gameId = game.game_id;
+      let homeTeamPicks = 0;
+      let awayTeamPicks = 0;
+      let totalPicks = 0;
+      
+      recapData.forEach(user => {
+        const userPick = user.picks[gameId];
+        if (userPick) {
+          totalPicks++;
+          if (userPick === game.home_team) {
+            homeTeamPicks++;
+          } else if (userPick === game.away_team) {
+            awayTeamPicks++;
+          }
+        }
+      });
+      
+      pickPercentages[gameId] = {
+        total_picks: totalPicks,
+        home_team_picks: homeTeamPicks,
+        away_team_picks: awayTeamPicks,
+        home_team_percentage: totalPicks > 0 ? Math.round((homeTeamPicks / totalPicks) * 100) : 0,
+        away_team_percentage: totalPicks > 0 ? Math.round((awayTeamPicks / totalPicks) * 100) : 0,
+        home_team: game.home_team,
+        away_team: game.away_team,
+        is_upset: false // Will be calculated after we know the winner
+      };
+      
+      // Determine if this is an upset (if game is finished)
+      if (game.game_status === 'final' && game.home_score !== null && game.away_score !== null) {
+        const winner = game.home_score > game.away_score ? game.home_team : game.away_team;
+        const winnerPercentage = winner === game.home_team ? 
+          pickPercentages[gameId].home_team_percentage : 
+          pickPercentages[gameId].away_team_percentage;
+        
+        // Consider it an upset if the winning team was picked by less than 40% of users
+        pickPercentages[gameId].is_upset = winnerPercentage < 40;
+        pickPercentages[gameId].winner = winner;
+      }
+    });
+
     // Sort by alias alphabetically
     recapData.sort((a, b) => a.alias.localeCompare(b.alias));
 
@@ -149,6 +194,7 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
       games,
       final_game: finalGame,
       recap_data: recapData,
+      pick_percentages: pickPercentages,
       total_users: recapData.length,
       total_games: games.length
     });

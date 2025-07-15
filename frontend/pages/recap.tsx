@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
-import { api, type RecapResponse, type RecapWeek } from '../lib/api';
+import { api, type RecapResponse, type RecapWeek, type PickPercentage } from '../lib/api';
 
 const RecapPage: React.FC = () => {
   const { user, isLoading } = useAuth();
@@ -111,6 +111,25 @@ const RecapPage: React.FC = () => {
 
   const selectedWeekData = availableWeeks.find(w => w.week === selectedWeek);
 
+  // Helper function to render pick percentages
+  const renderPickPercentages = (gameId: number) => {
+    if (!recapData?.pick_percentages[gameId]) return null;
+    
+    const percentages = recapData.pick_percentages[gameId];
+    
+    return (
+      <div className="mt-1 text-[10px] space-y-0.5">
+        <div className="flex justify-between">
+          <span className="text-green-600 font-medium">{percentages.away_team_percentage}%</span>
+          <span className="text-blue-600 font-medium">{percentages.home_team_percentage}%</span>
+        </div>
+        {percentages.is_upset && (
+          <div className="text-orange-600 font-bold">UPSET!</div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -205,6 +224,68 @@ const RecapPage: React.FC = () => {
         {loading && (
           <div className="flex justify-center items-center h-64">
             <div className="text-lg">Loading recap data...</div>
+          </div>
+        )}
+
+        {/* Pick Consensus Overview */}
+        {recapData && !loading && (
+          <div className="mb-6 bg-white rounded-lg shadow">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Pick Consensus Overview</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {recapData.games.slice(0, 6).map(game => {
+                  const percentages = recapData.pick_percentages[game.game_id];
+                  if (!percentages) return null;
+                  
+                  return (
+                    <div key={game.game_id} className="border border-gray-200 rounded-lg p-3">
+                      <div className="text-sm font-medium text-gray-900 mb-2">
+                        {game.away_team} @ {game.home_team}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">{game.away_team}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                              {percentages.away_team_percentage}%
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              ({percentages.away_team_picks} picks)
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">{game.home_team}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                              {percentages.home_team_percentage}%
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              ({percentages.home_team_picks} picks)
+                            </div>
+                          </div>
+                        </div>
+                        {percentages.is_upset && (
+                          <div className="text-center mt-2">
+                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-bold">
+                              UPSET!
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {recapData.games.length > 6 && (
+                <div className="mt-4 text-center">
+                  <div className="text-sm text-gray-500">
+                    Showing first 6 games. Full percentages visible in grid view below.
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -316,6 +397,7 @@ const RecapPage: React.FC = () => {
                               minute: '2-digit'
                             })}
                           </div>
+                          {renderPickPercentages(game.game_id)}
                         </div>
                       </th>
                     ))}
@@ -395,6 +477,7 @@ const RecapPage: React.FC = () => {
                       <div className="font-medium text-sm">{game.away_team}</div>
                       <div className="text-xs text-gray-500">@</div>
                       <div className="font-medium text-sm">{game.home_team}</div>
+                      {renderPickPercentages(game.game_id)}
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 text-right">

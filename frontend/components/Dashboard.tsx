@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { getTeamLogo } from '../lib/theSportsDbApi';
+import { getTeamHelmetLogo } from '../lib/teamHelmetLogos';
 import { api, type Game, type Pick } from '../lib/api';
 
 interface GameWithLogos extends Game {
@@ -55,20 +55,14 @@ const Dashboard: React.FC = () => {
         // Show first 8 games for dashboard preview
         const displayGames = gamesData.slice(0, 8);
         
-        // Fetch team logos for all teams
-        const gamesWithLogos = await Promise.all(
-          displayGames.map(async (game) => {
-            const [homeLogo, awayLogo] = await Promise.all([
-              getTeamLogo(game.home_team),
-              getTeamLogo(game.away_team)
-            ]);
-            return {
-              ...game,
-              home_logo: homeLogo || undefined,
-              away_logo: awayLogo || undefined
-            };
-          })
-        );
+        // Add team helmet logos
+        const gamesWithLogos = displayGames.map((game) => {
+          return {
+            ...game,
+            home_logo: getTeamHelmetLogo(game.home_team),
+            away_logo: getTeamHelmetLogo(game.away_team)
+          };
+        });
         
         setGames(gamesWithLogos);
 

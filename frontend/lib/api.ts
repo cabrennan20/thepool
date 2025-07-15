@@ -55,6 +55,18 @@ interface RecapData {
   tiebreaker_points: number | null;
 }
 
+interface PickPercentage {
+  total_picks: number;
+  home_team_picks: number;
+  away_team_picks: number;
+  home_team_percentage: number;
+  away_team_percentage: number;
+  home_team: string;
+  away_team: string;
+  is_upset: boolean;
+  winner?: string;
+}
+
 interface RecapResponse {
   week: number;
   season: number;
@@ -62,6 +74,7 @@ interface RecapResponse {
   games: Game[];
   final_game: Game;
   recap_data: RecapData[];
+  pick_percentages: Record<number, PickPercentage>;
   total_users: number;
   total_games: number;
 }
@@ -85,6 +98,19 @@ interface NotificationPreferences {
   reminder_hours_before: number;
   created_at: string;
   updated_at: string;
+}
+
+interface AdminMessage {
+  message_id: number;
+  title: string;
+  content: string;
+  author_username: string;
+  author_first_name: string;
+  author_last_name: string;
+  created_at: string;
+  updated_at: string;
+  is_pinned: boolean;
+  send_email: boolean;
 }
 
 class ApiClient {
@@ -335,7 +361,56 @@ class ApiClient {
       body: JSON.stringify({ email }),
     });
   }
+
+  // Admin Messages
+  async getAdminMessages(limit?: number, offset?: number): Promise<{
+    messages: AdminMessage[];
+    total: number;
+    limit: number;
+    offset: number;
+  }> {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+    if (offset) params.append('offset', offset.toString());
+    
+    return this.request<{
+      messages: AdminMessage[];
+      total: number;
+      limit: number;
+      offset: number;
+    }>(`/admin-messages?${params.toString()}`);
+  }
+
+  async createAdminMessage(data: {
+    title: string;
+    content: string;
+    is_pinned?: boolean;
+    send_email?: boolean;
+  }): Promise<{ message: string; data: AdminMessage }> {
+    return this.request<{ message: string; data: AdminMessage }>('/admin-messages', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateAdminMessage(messageId: number, data: {
+    title: string;
+    content: string;
+    is_pinned?: boolean;
+    send_email?: boolean;
+  }): Promise<{ message: string; data: AdminMessage }> {
+    return this.request<{ message: string; data: AdminMessage }>(`/admin-messages/${messageId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAdminMessage(messageId: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/admin-messages/${messageId}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const api = new ApiClient();
-export type { User, Game, Pick, WeeklyScore, RecapData, RecapResponse, RecapWeek, NotificationPreferences };
+export type { User, Game, Pick, WeeklyScore, RecapData, RecapResponse, RecapWeek, PickPercentage, NotificationPreferences, AdminMessage };

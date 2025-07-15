@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
-import { api, type Game, type User } from '../lib/api';
+import { api, type Game, type User, type AdminMessage } from '../lib/api';
 
 interface WeeklyScoresData {
   user_id: number;
@@ -20,7 +20,8 @@ const AdminPanel: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [currentWeekGames, setCurrentWeekGames] = useState<Game[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'games' | 'users' | 'scores'>('games');
+  const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
+  const [activeTab, setActiveTab] = useState<'games' | 'users' | 'scores' | 'messages'>('games');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -39,6 +40,10 @@ const AdminPanel: React.FC = () => {
         // Fetch all users
         const usersData = await api.getAllUsers();
         setUsers(usersData);
+        
+        // Fetch admin messages
+        const messagesData = await api.getAdminMessages(10, 0);
+        setAdminMessages(messagesData.messages);
         
       } catch (err) {
         setError('Failed to load admin data');
@@ -199,6 +204,16 @@ const AdminPanel: React.FC = () => {
             >
               Score Calculation
             </button>
+            <button
+              onClick={() => setActiveTab('messages')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'messages'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Messages
+            </button>
           </nav>
         </div>
 
@@ -257,6 +272,24 @@ const AdminPanel: React.FC = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Messages Tab */}
+        {activeTab === 'messages' && (
+          <AdminMessagesTab 
+            messages={adminMessages}
+            onMessagesChange={async () => {
+              // Refresh messages
+              try {
+                const messagesData = await api.getAdminMessages(10, 0);
+                setAdminMessages(messagesData.messages);
+              } catch (err) {
+                console.error('Failed to refresh messages:', err);
+              }
+            }}
+            onError={setError}
+            onSuccess={setSuccessMessage}
+          />
         )}
       </div>
     </div>
@@ -431,6 +464,271 @@ const UserManagementItem: React.FC<UserManagementItemProps> = ({ user, onUpdate 
         </div>
       </div>
     </li>
+  );
+};
+
+// Admin Messages Tab Component
+interface AdminMessagesTabProps {
+  messages: AdminMessage[];
+  onMessagesChange: () => Promise<void>;
+  onError: (error: string) => void;
+  onSuccess: (message: string) => void;
+}
+
+const AdminMessagesTab: React.FC<AdminMessagesTabProps> = ({ 
+  messages, 
+  onMessagesChange, 
+  onError, 
+  onSuccess 
+}) => {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingMessage, setEditingMessage] = useState<AdminMessage | null>(null);
+
+  const handleCreateMessage = async (data: {
+    title: string;
+    content: string;
+    is_pinned: boolean;
+    send_email: boolean;
+  }) => {
+    try {
+      await api.createAdminMessage(data);
+      onSuccess('Message created successfully!');
+      setShowCreateForm(false);
+      await onMessagesChange();
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Failed to create message');
+    }
+  };
+
+  const handleUpdateMessage = async (messageId: number, data: {
+    title: string;
+    content: string;
+    is_pinned: boolean;
+    send_email: boolean;
+  }) => {
+    try {
+      await api.updateAdminMessage(messageId, data);
+      onSuccess('Message updated successfully!');
+      setEditingMessage(null);
+      await onMessagesChange();
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Failed to update message');
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: number) => {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    
+    try {
+      await api.deleteAdminMessage(messageId);
+      onSuccess('Message deleted successfully!');
+      await onMessagesChange();
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Failed to delete message');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-gray-900">League Messages</h2>
+        <button
+          onClick={() => setShowCreateForm(true)}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium"
+        >
+          Create Message
+        </button>
+      </div>
+
+      {/* Create Message Form */}
+      {showCreateForm && (
+        <MessageForm
+          onSubmit={handleCreateMessage}
+          onCancel={() => setShowCreateForm(false)}
+          title="Create New Message"
+        />
+      )}
+
+      {/* Edit Message Form */}
+      {editingMessage && (
+        <MessageForm
+          message={editingMessage}
+          onSubmit={(data) => handleUpdateMessage(editingMessage.message_id, data)}
+          onCancel={() => setEditingMessage(null)}
+          title="Edit Message"
+        />
+      )}
+
+      {/* Messages List */}
+      <div className="space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>No messages yet. Create your first league announcement!</p>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <div key={message.message_id} className="bg-white shadow rounded-lg p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <h3 className="text-lg font-medium text-gray-900">{message.title}</h3>
+                    {message.is_pinned && (
+                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">
+                        Pinned
+                      </span>
+                    )}
+                    {message.send_email && (
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                        Emailed
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500 mb-3">
+                    By {message.author_first_name} {message.author_last_name} • {' '}
+                    {new Date(message.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                  <div className="prose prose-sm max-w-none">
+                    {message.content.split('\n').map((line, idx) => (
+                      <p key={idx} className="mb-2">{line}</p>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex space-x-2 ml-4">
+                  <button
+                    onClick={() => setEditingMessage(message)}
+                    className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMessage(message.message_id)}
+                    className="text-red-600 hover:text-red-900 text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Message Form Component
+interface MessageFormProps {
+  message?: AdminMessage;
+  onSubmit: (data: {
+    title: string;
+    content: string;
+    is_pinned: boolean;
+    send_email: boolean;
+  }) => Promise<void>;
+  onCancel: () => void;
+  title: string;
+}
+
+const MessageForm: React.FC<MessageFormProps> = ({ message, onSubmit, onCancel, title }) => {
+  const [formData, setFormData] = useState({
+    title: message?.title || '',
+    content: message?.content || '',
+    is_pinned: message?.is_pinned || false,
+    send_email: message?.send_email || false,
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title || !formData.content) return;
+    
+    setSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="bg-white shadow rounded-lg p-6">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Title
+          </label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Message title..."
+            required
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Content
+          </label>
+          <textarea
+            value={formData.content}
+            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+            rows={6}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Your message content..."
+            required
+          />
+        </div>
+        
+        <div className="flex items-center space-x-6">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.is_pinned}
+              onChange={(e) => setFormData({ ...formData, is_pinned: e.target.checked })}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <span className="ml-2 text-sm text-gray-700">Pin this message</span>
+          </label>
+          
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.send_email}
+              onChange={(e) => setFormData({ ...formData, send_email: e.target.checked })}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <span className="ml-2 text-sm text-gray-700">Send email notification</span>
+          </label>
+        </div>
+        
+        <div className="flex justify-end space-x-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={!formData.title || !formData.content || submitting}
+            className="px-4 py-2 bg-indigo-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-gray-400"
+          >
+            {submitting ? 'Saving...' : (message ? 'Update Message' : 'Create Message')}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

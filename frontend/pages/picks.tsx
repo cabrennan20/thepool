@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
-import { getTeamLogo } from '../lib/theSportsDbApi';
+import { getTeamHelmetLogo } from '../lib/teamHelmetLogos';
 import { api, type Game, type Pick } from '../lib/api';
 
 interface GameWithLogos extends Game {
@@ -46,20 +46,14 @@ const PicksPage: React.FC = () => {
         // Fetch games from backend
         const gamesData = await api.getCurrentWeekGames();
         
-        // Fetch team logos
-        const gamesWithLogos = await Promise.all(
-          gamesData.map(async (game) => {
-            const [homeLogo, awayLogo] = await Promise.all([
-              getTeamLogo(game.home_team),
-              getTeamLogo(game.away_team)
-            ]);
-            return {
-              ...game,
-              home_logo: homeLogo || undefined,
-              away_logo: awayLogo || undefined
-            };
-          })
-        );
+        // Add team helmet logos
+        const gamesWithLogos = gamesData.map((game) => {
+          return {
+            ...game,
+            home_logo: getTeamHelmetLogo(game.home_team),
+            away_logo: getTeamHelmetLogo(game.away_team)
+          };
+        });
         
         setGames(gamesWithLogos);
         
