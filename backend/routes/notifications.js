@@ -2,12 +2,16 @@ const express = require('express');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 const emailService = require('../services/emailService');
+const NotificationService = require('../services/notificationService');
 
 const router = express.Router();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
+
+// Initialize notification service instance
+const notificationService = new NotificationService(pool);
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
@@ -191,11 +195,12 @@ router.post('/trigger/pick-reminders', authenticateToken, requireAdmin, async (r
       return res.status(400).json({ error: 'Week and season are required' });
     }
 
-    // This would be handled by the notification service
-    // For now, return success message
+    await notificationService.triggerPickReminders(week, season);
+    
     res.json({
-      message: `Pick reminder trigger scheduled for Week ${week}, ${season}`,
-      note: 'This feature requires the notification service to be running'
+      message: `Pick reminders sent for Week ${week}, ${season}`,
+      week,
+      season
     });
   } catch (error) {
     console.error('Error triggering pick reminders:', error);
@@ -212,10 +217,13 @@ router.post('/trigger/weekly-recap', authenticateToken, requireAdmin, async (req
       return res.status(400).json({ error: 'Week and season are required' });
     }
 
-    // This would be handled by the notification service
+    const result = await notificationService.triggerWeeklyRecap(week, season);
+    
     res.json({
-      message: `Weekly recap trigger scheduled for Week ${week}, ${season}`,
-      note: 'This feature requires the notification service to be running'
+      message: `Weekly recap sent for Week ${week}, ${season}`,
+      week,
+      season,
+      results: result
     });
   } catch (error) {
     console.error('Error triggering weekly recap:', error);

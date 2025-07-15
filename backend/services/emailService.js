@@ -134,6 +134,23 @@ Good luck with your picks!
         `${index + 1}. ${member.alias} - ${member.correct_picks}/${member.total_picks} (${member.win_percentage}%)`
       ).join('\n');
 
+      // Find user's performance this week
+      const userRecap = recapData.recap_data.find(data => data.user_id === user.user_id);
+      const userPerformance = userRecap ? 
+        `You went ${userRecap.correct_picks}/${userRecap.total_picks} (${userRecap.win_percentage}%) this week.` : 
+        'We didn\'t find your picks for this week.';
+
+      // Build game results summary
+      const gameResults = recapData.games.map(game => {
+        const winner = game.home_score > game.away_score ? game.home_team : 
+                      game.away_score > game.home_score ? game.away_team : 'TIE';
+        const finalScore = game.game_status === 'final' ? 
+          `${game.away_team} ${game.away_score} - ${game.home_score} ${game.home_team}` :
+          `${game.away_team} @ ${game.home_team} (${game.game_status})`;
+        
+        return finalScore;
+      }).join('\n');
+
       const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1f2937;">🏈 THE POOL - Week ${recapData.week} Results</h2>
@@ -142,7 +159,17 @@ Good luck with your picks!
           
           <p>Week ${recapData.week} is complete! Here are the results and updated standings.</p>
           
-          <h3>📊 Top 10 Leaderboard</h3>
+          <div style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px; margin: 20px 0;">
+            <h3 style="margin: 0 0 10px 0; color: #0c4a6e;">📈 Your Performance</h3>
+            <p style="margin: 0; color: #0c4a6e; font-weight: bold;">${userPerformance}</p>
+          </div>
+
+          <h3>🏆 Week ${recapData.week} Game Results</h3>
+          <div style="background-color: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+            <pre style="font-family: Arial, sans-serif; margin: 0; white-space: pre-wrap; font-size: 14px;">${gameResults}</pre>
+          </div>
+          
+          <h3>📊 Top 10 Season Leaderboard</h3>
           <div style="background-color: #f9fafb; padding: 16px; border-radius: 8px;">
             <pre style="font-family: Arial, sans-serif; margin: 0; white-space: pre-wrap;">${leaderboardRows}</pre>
           </div>
@@ -177,7 +204,13 @@ Hi ${user.alias},
 
 Week ${recapData.week} is complete! Here are the results and updated standings.
 
-📊 TOP 10 LEADERBOARD:
+📈 YOUR PERFORMANCE:
+${userPerformance}
+
+🏆 WEEK ${recapData.week} GAME RESULTS:
+${gameResults}
+
+📊 TOP 10 SEASON LEADERBOARD:
 ${leaderboardRows}
 
 View full recap: ${process.env.FRONTEND_URL}/recap?week=${recapData.week}

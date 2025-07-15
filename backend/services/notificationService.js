@@ -103,7 +103,7 @@ class NotificationService {
     try {
       // Get users who haven't submitted picks for this week
       const usersQuery = `
-        SELECT u.user_id, u.email, u.alias, u.first_name
+        SELECT u.user_id, u.email, u.username as alias, u.first_name
         FROM users u
         WHERE u.user_id NOT IN (
           SELECT DISTINCT p.user_id 
@@ -113,6 +113,7 @@ class NotificationService {
         )
         AND u.email IS NOT NULL
         AND u.email != ''
+        AND u.is_active = true
       `;
 
       const usersResult = await this.pool.query(usersQuery, [week, season]);
@@ -158,7 +159,7 @@ class NotificationService {
     try {
       // Get users who still haven't submitted picks
       const usersQuery = `
-        SELECT u.user_id, u.email, u.alias, u.first_name
+        SELECT u.user_id, u.email, u.username as alias, u.first_name
         FROM users u
         WHERE u.user_id NOT IN (
           SELECT DISTINCT p.user_id 
@@ -168,6 +169,7 @@ class NotificationService {
         )
         AND u.email IS NOT NULL
         AND u.email != ''
+        AND u.is_active = true
       `;
 
       const usersResult = await this.pool.query(usersQuery, [week, season]);
@@ -244,11 +246,14 @@ class NotificationService {
         return;
       }
 
-      // Get all users
+      // Get users who have opted in for weekly recap emails
       const usersQuery = `
-        SELECT user_id, email, alias, first_name
-        FROM users 
-        WHERE email IS NOT NULL AND email != ''
+        SELECT u.user_id, u.email, u.username as alias, u.first_name
+        FROM users u
+        LEFT JOIN user_notification_preferences unp ON u.user_id = unp.user_id
+        WHERE u.email IS NOT NULL AND u.email != ''
+        AND u.is_active = true
+        AND (unp.email_weekly_recap = true OR unp.email_weekly_recap IS NULL)
       `;
 
       const usersResult = await this.pool.query(usersQuery);
@@ -279,40 +284,135 @@ class NotificationService {
   }
 
   async getRecapData(week, season) {
-    // Simplified recap data for email
+    // Get comprehensive recap data similar to the recap API
     const gamesQuery = `
-      SELECT game_id, away_team, home_team, game_date
+      SELECT 
+        game_id,
+        home_team,
+        away_team,
+        game_date,
+        home_score,
+        away_score,
+        game_status,
+        spread
       FROM games 
       WHERE week = $1 AND season = $2 
       ORDER BY game_date
     `;
     
     const gamesResult = await this.pool.query(gamesQuery, [week, season]);
+    const games = gamesResult.rows;
+
+    // Get all users' picks for this week
+    const picksQuery = `
+      SELECT 
+        u.user_id,
+        u.username,
+        u.first_name,
+        u.last_name,
+        p.game_id,
+        p.selected_team,
+        p.is_correct,
+        g.home_team,
+        g.away_team,
+        g.game_date,
+        g.home_score,
+        g.away_score,
+        g.game_status
+      FROM users u
+      LEFT JOIN picks p ON u.user_id = p.user_id
+      LEFT JOIN games g ON p.game_id = g.game_id AND g.week = $1 AND g.season = $2
+      WHERE u.is_active = true
+      ORDER BY u.username, g.game_date
+    `;
+
+    const picksResult = await this.pool.query(picksQuery, [week, season]);
+
+    // Group picks by user
+    const userPicksMap = new Map();
     
+    picksResult.rows.forEach(row => {
+      const userId = row.user_id;
+      
+      if (!userPicksMap.has(userId)) {
+        userPicksMap.set(userId, {
+          user_id: userId,
+          username: row.username,
+          alias: row.username, // Use username as alias since alias column doesn't exist
+          first_name: row.first_name,
+          last_name: row.last_name,
+          picks: new Map(),
+          correct_picks: 0,
+          total_picks: 0
+        });
+      }
+      
+      if (row.game_id) {
+        const pick = {
+          game_id: row.game_id,
+          selected_team: row.selected_team,
+          is_correct: row.is_correct
+        };
+        
+        userPicksMap.get(userId).picks.set(row.game_id, pick);
+        
+        if (row.is_correct !== null) {
+          userPicksMap.get(userId).total_picks++;
+          if (row.is_correct) {
+            userPicksMap.get(userId).correct_picks++;
+          }
+        }
+      }
+    });
+
+    // Convert to array and calculate statistics
+    const recapData = Array.from(userPicksMap.values()).map(user => {
+      const userPicks = {};
+      
+      games.forEach(game => {
+        const pick = user.picks.get(game.game_id);
+        userPicks[game.game_id] = pick ? pick.selected_team : null;
+      });
+      
+      return {
+        user_id: user.user_id,
+        alias: user.alias,
+        username: user.username,
+        picks: userPicks,
+        correct_picks: user.correct_picks,
+        total_picks: user.total_picks,
+        win_percentage: user.total_picks > 0 ? Math.round((user.correct_picks / user.total_picks) * 100) : 0
+      };
+    });
+
     return {
       week,
       season,
-      games: gamesResult.rows
+      games,
+      recap_data: recapData,
+      total_users: recapData.length,
+      total_games: games.length
     };
   }
 
   async getSeasonLeaderboard(season) {
     const leaderboardQuery = `
       SELECT 
-        u.alias,
+        u.username as alias,
         COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_picks,
         COUNT(p.pick_id) as total_picks,
-        ROUND(
+        CAST(
           CASE 
             WHEN COUNT(p.pick_id) > 0 
             THEN (COUNT(CASE WHEN p.is_correct = true THEN 1 END)::float / COUNT(p.pick_id)) * 100 
             ELSE 0 
-          END, 1
+          END AS INTEGER
         ) as win_percentage
       FROM users u
       LEFT JOIN picks p ON u.user_id = p.user_id
       LEFT JOIN games g ON p.game_id = g.game_id AND g.season = $1
-      GROUP BY u.user_id, u.alias
+      WHERE u.is_active = true
+      GROUP BY u.user_id, u.username
       HAVING COUNT(p.pick_id) > 0
       ORDER BY win_percentage DESC, correct_picks DESC
     `;
@@ -358,9 +458,12 @@ class NotificationService {
     const leaderboard = await this.getSeasonLeaderboard(season);
 
     const usersQuery = `
-      SELECT user_id, email, alias, first_name
-      FROM users 
-      WHERE email IS NOT NULL AND email != ''
+      SELECT u.user_id, u.email, u.username as alias, u.first_name
+      FROM users u
+      LEFT JOIN user_notification_preferences unp ON u.user_id = unp.user_id
+      WHERE u.email IS NOT NULL AND u.email != ''
+      AND u.is_active = true
+      AND (unp.email_weekly_recap = true OR unp.email_weekly_recap IS NULL)
     `;
 
     const usersResult = await this.pool.query(usersQuery);
