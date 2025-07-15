@@ -343,7 +343,7 @@ class ApiClient {
         ...pick,
         pick_id: index + 1,
         user_id: 1, // Mock user ID
-        is_correct: null,
+        is_correct: undefined,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }));
