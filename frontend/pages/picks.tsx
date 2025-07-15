@@ -167,24 +167,24 @@ const PicksPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="mb-4 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Weekly Picks</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Weekly Picks</h1>
             </div>
             
             {/* Progress indicator - right side on desktop, below on mobile */}
             {games.length > 0 && (
               <div className="mt-3 sm:mt-0 sm:ml-8">
-                <div className="flex items-center justify-between sm:justify-end text-sm text-gray-500">
+                <div className="flex items-center justify-between sm:justify-end text-sm text-gray-500 dark:text-gray-400">
                   <span className="sm:hidden">Progress</span>
                   <span>{picks.length}/{games.length} picks</span>
                 </div>
-                <div className="mt-1 w-full sm:w-32 bg-gray-200 rounded-full h-2">
+                <div className="mt-1 w-full sm:w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
                     style={{ width: `${(picks.length / games.length) * 100}%` }}
@@ -197,16 +197,16 @@ const PicksPage: React.FC = () => {
 
         {/* Quick Pick Mode Toggle (Mobile Only) */}
         <div className="sm:hidden mb-4">
-          <div className="flex items-center justify-center space-x-4 bg-white rounded-lg p-3 shadow">
+          <div className="flex items-center justify-center space-x-4 bg-white dark:bg-gray-800 rounded-lg p-3 shadow">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 onChange={(e) => setQuickPickMode(e.target.checked)}
               />
-              <span className="text-sm font-medium text-gray-700">Quick Pick Mode</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Quick Pick Mode</span>
             </label>
-            <div className="text-xs text-gray-500">Tap teams to pick quickly</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Tap teams to pick quickly</div>
           </div>
         </div>
 
@@ -220,8 +220,8 @@ const PicksPage: React.FC = () => {
 
               if (isQuickMode) {
                 return (
-                  <div key={game.game_id} className="bg-white shadow rounded-lg p-3 border-l-4 ${
-                    currentPick ? 'border-green-500' : 'border-gray-300'
+                  <div key={game.game_id} className="bg-white dark:bg-gray-800 shadow rounded-lg p-3 border-l-4 ${
+                    currentPick ? 'border-green-500' : 'border-gray-300 dark:border-gray-600'
                   }">                    
                     {/* Quick Pick Card - Mobile Only */}
                     <div className="flex items-center justify-between mb-3">
@@ -296,7 +296,7 @@ const PicksPage: React.FC = () => {
 
               // Regular desktop/tablet view
               return (
-                <div key={game.game_id} className="bg-white shadow rounded-lg p-3 sm:p-4">
+                <div key={game.game_id} className="bg-white dark:bg-gray-800 shadow rounded-lg p-3 sm:p-4">
                   {/* Mobile-first Header */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 mb-3">
                     {/* Teams Section */}
@@ -310,14 +310,14 @@ const PicksPage: React.FC = () => {
                             className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
                           />
                         )}
-                        <div className="font-medium text-gray-900 text-sm sm:text-base">{game.away_team}</div>
+                        <div className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">{game.away_team}</div>
                       </div>
                       
-                      <div className="text-sm text-gray-500 font-medium">@</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">@</div>
                       
                       {/* Home Team */}
                       <div className="flex items-center space-x-2">
-                        <div className="font-medium text-gray-900 text-sm sm:text-base">{game.home_team}</div>
+                        <div className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">{game.home_team}</div>
                         {game.home_logo && (
                           <img 
                             src={game.home_logo} 

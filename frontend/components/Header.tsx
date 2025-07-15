@@ -23,7 +23,7 @@ const Header: React.FC = () => {
   ];
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -40,14 +40,14 @@ const Header: React.FC = () => {
                 <a
                   key={item.href}
                   href={item.href}
-                  className="text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   {item.label}
                 </a>
               ))}
             </nav>
             <div className="ml-4 flex items-center space-x-3">
-              <span className="text-sm text-gray-600">Hi, {user.username}!</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Hi, {user.username}!</span>
               <button
                 onClick={logout}
                 className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
@@ -82,7 +82,7 @@ const Header: React.FC = () => {
       {/* Mobile Navigation Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
             {navItems.map((item) => (
               <a
                 key={item.href}
