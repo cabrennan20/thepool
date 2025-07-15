@@ -13,67 +13,210 @@ export const mockUsers = [
   { user_id: 8, username: "emily_davis", alias: "The Sage", first_name: "Emily", last_name: "Davis", is_admin: false },
 ];
 
-// Mock games data
+// Mock games data - NFL Week 1 2025 realistic schedule (16 games)
 export const mockGames: Game[] = [
+  // Thursday Night Football
   {
     game_id: 1,
     season: 2025,
     week: 1,
-    game_date: "2025-09-07T13:00:00Z",
-    home_team: "New England Patriots",
-    away_team: "Miami Dolphins",
-    home_score: 24,
-    away_score: 17,
+    game_date: "2025-09-04T20:15:00Z",
+    home_team: "Kansas City Chiefs",
+    away_team: "Baltimore Ravens",
+    home_score: null,
+    away_score: null,
     spread: -3.5,
-    game_status: "final"
+    game_status: "scheduled"
   },
+  
+  // Sunday Early Games (1:00 PM ET)
   {
     game_id: 2,
     season: 2025,
     week: 1,
-    game_date: "2025-09-07T16:25:00Z",
-    home_team: "Kansas City Chiefs",
-    away_team: "Buffalo Bills",
-    home_score: 31,
-    away_score: 21,
-    spread: -2.5,
-    game_status: "final"
+    game_date: "2025-09-07T17:00:00Z",
+    home_team: "New England Patriots",
+    away_team: "Cincinnati Bengals",
+    home_score: null,
+    away_score: null,
+    spread: 1.5,
+    game_status: "scheduled"
   },
   {
     game_id: 3,
     season: 2025,
     week: 1,
-    game_date: "2025-09-08T20:15:00Z",
-    home_team: "San Francisco 49ers",
-    away_team: "Dallas Cowboys",
-    home_score: 28,
-    away_score: 35,
+    game_date: "2025-09-07T17:00:00Z",
+    home_team: "Miami Dolphins",
+    away_team: "Jacksonville Jaguars",
+    home_score: null,
+    away_score: null,
     spread: -7,
-    game_status: "final"
+    game_status: "scheduled"
   },
   {
     game_id: 4,
     season: 2025,
     week: 1,
-    game_date: "2025-09-08T20:15:00Z",
-    home_team: "Green Bay Packers",
-    away_team: "Minnesota Vikings",
-    home_score: 21,
-    away_score: 14,
-    spread: -4,
-    game_status: "final"
+    game_date: "2025-09-07T17:00:00Z",
+    home_team: "Philadelphia Eagles",
+    away_team: "Green Bay Packers",
+    home_score: null,
+    away_score: null,
+    spread: -2.5,
+    game_status: "scheduled"
   },
   {
     game_id: 5,
     season: 2025,
     week: 1,
-    game_date: "2025-09-09T20:15:00Z",
-    home_team: "Los Angeles Rams",
-    away_team: "Seattle Seahawks",
-    home_score: 17,
-    away_score: 20,
+    game_date: "2025-09-07T17:00:00Z",
+    home_team: "Indianapolis Colts",
+    away_team: "Houston Texans",
+    home_score: null,
+    away_score: null,
+    spread: 3,
+    game_status: "scheduled"
+  },
+  {
+    game_id: 6,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-07T17:00:00Z",
+    home_team: "Pittsburgh Steelers",
+    away_team: "Atlanta Falcons",
+    home_score: null,
+    away_score: null,
+    spread: -4.5,
+    game_status: "scheduled"
+  },
+  {
+    game_id: 7,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-07T17:00:00Z",
+    home_team: "Cleveland Browns",
+    away_team: "New York Jets",
+    home_score: null,
+    away_score: null,
+    spread: -1,
+    game_status: "scheduled"
+  },
+  {
+    game_id: 8,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-07T17:00:00Z",
+    home_team: "Tennessee Titans",
+    away_team: "Chicago Bears",
+    home_score: null,
+    away_score: null,
+    spread: 2.5,
+    game_status: "scheduled"
+  },
+  
+  // Sunday Late Games (4:05/4:25 PM ET)
+  {
+    game_id: 9,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-07T20:05:00Z",
+    home_team: "Las Vegas Raiders",
+    away_team: "Denver Broncos",
+    home_score: null,
+    away_score: null,
+    spread: -1.5,
+    game_status: "scheduled"
+  },
+  {
+    game_id: 10,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-07T20:25:00Z",
+    home_team: "Arizona Cardinals",
+    away_team: "Los Angeles Chargers",
+    home_score: null,
+    away_score: null,
+    spread: 4,
+    game_status: "scheduled"
+  },
+  {
+    game_id: 11,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-07T20:25:00Z",
+    home_team: "Seattle Seahawks",
+    away_team: "Buffalo Bills",
+    home_score: null,
+    away_score: null,
+    spread: 1,
+    game_status: "scheduled"
+  },
+  {
+    game_id: 12,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-07T20:25:00Z",
+    home_team: "San Francisco 49ers",
+    away_team: "New York Giants",
+    home_score: null,
+    away_score: null,
+    spread: -10,
+    game_status: "scheduled"
+  },
+  
+  // Sunday Night Football
+  {
+    game_id: 13,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-08T00:20:00Z",
+    home_team: "Dallas Cowboys",
+    away_team: "Minnesota Vikings",
+    home_score: null,
+    away_score: null,
     spread: -3,
-    game_status: "final"
+    game_status: "scheduled"
+  },
+  
+  // Monday Night Football
+  {
+    game_id: 14,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-09T00:15:00Z",
+    home_team: "New Orleans Saints",
+    away_team: "Carolina Panthers",
+    home_score: null,
+    away_score: null,
+    spread: -6.5,
+    game_status: "scheduled"
+  },
+  {
+    game_id: 15,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-09T00:15:00Z",
+    home_team: "Tampa Bay Buccaneers",
+    away_team: "Washington Commanders",
+    home_score: null,
+    away_score: null,
+    spread: -7.5,
+    game_status: "scheduled"
+  },
+  
+  // Additional game for 16 total
+  {
+    game_id: 16,
+    season: 2025,
+    week: 1,
+    game_date: "2025-09-07T17:00:00Z",
+    home_team: "Detroit Lions",
+    away_team: "Los Angeles Rams",
+    home_score: null,
+    away_score: null,
+    spread: -4,
+    game_status: "scheduled"
   }
 ];
 
