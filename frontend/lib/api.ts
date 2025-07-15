@@ -96,6 +96,10 @@ class ApiClient {
     }
   }
 
+  getToken(): string | null {
+    return this.token;
+  }
+
   setToken(token: string) {
     this.token = token;
     if (typeof window !== 'undefined') {
@@ -127,6 +131,11 @@ class ApiClient {
     });
 
     if (!response.ok) {
+      // Handle authentication errors specifically
+      if (response.status === 401 || response.status === 403) {
+        this.clearToken();
+      }
+      
       const error = await response.json().catch(() => ({ message: 'Unknown error' }));
       throw new Error(error.message || `HTTP ${response.status}`);
     }

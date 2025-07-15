@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api, type User } from '../lib/api';
+import { hasValidToken, getStoredToken } from '../utils/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -7,6 +8,7 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,27 +29,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const initializeAuth = async () => {
+      if (initialized) return; // Prevent re-running
+      
       try {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          // Verify token is still valid by getting current user
-          const currentUser = await api.getCurrentUser();
-          setUser(currentUser);
+        const token = getStoredToken();
+        
+        if (token && hasValidToken()) {
+          // Token exists and appears valid, set it and verify
+          api.setToken(token);
+          
+          try {
+            const currentUser = await api.getCurrentUser();
+            setUser(currentUser);
+          } catch (error) {
+            // Token is invalid, clear it
+            console.warn('Stored token is invalid, clearing auth data');
+            api.clearToken();
+            setUser(null);
+          }
+        } else if (token) {
+          // Token exists but appears expired/invalid
+          console.warn('Stored token appears expired, clearing auth data');
+          api.clearToken();
+          setUser(null);
         }
+        // If no token, user remains null
       } catch (error) {
-        // Token is invalid, clear it
-        localStorage.removeItem('auth_token');
-        api.clearToken();
+        console.error('Auth initialization failed:', error);
+        setUser(null);
       } finally {
         setIsLoading(false);
+        setInitialized(true);
       }
     };
 
-    checkAuthStatus();
-  }, []);
+    initializeAuth();
+  }, []); // Empty dependency array to run only once
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
@@ -83,7 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     isLoading,
-    error
+    error,
+    isAuthenticated: !!user
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
