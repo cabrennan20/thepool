@@ -34,6 +34,8 @@ interface Pick {
   selected_team: string;
   tiebreaker_points?: number;
   is_correct?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface WeeklyScore {

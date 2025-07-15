@@ -33,7 +33,7 @@ function generateToken(user) {
       isAdmin: user.is_admin 
     },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '24h' }
   );
 }
 
