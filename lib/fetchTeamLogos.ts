@@ -6,7 +6,7 @@
 export async function fetchTeamLogos(): Promise<Record<string, string>> {
   try {
     const response = await fetch(
-      "https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=NFL"
+      'https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=NFL'
     );
 
     if (!response.ok) {
@@ -16,7 +16,7 @@ export async function fetchTeamLogos(): Promise<Record<string, string>> {
     const data = await response.json();
 
     if (!data.teams) {
-      throw new Error("No teams found in API response");
+      throw new Error('No teams found in API response');
     }
 
     const logoMap: Record<string, string> = {};
@@ -28,7 +28,7 @@ export async function fetchTeamLogos(): Promise<Record<string, string>> {
 
     return logoMap;
   } catch (error) {
-    console.error("Error fetching team logos:", error);
+    console.error('Error fetching team logos:', error);
     return {};
   }
 }
