@@ -1,4 +1,1 @@
-{
-  "buildCommand": "cp -r frontend/* . && npm install && npm run build",
-  "outputDirectory": ".next"
-}
+{}
