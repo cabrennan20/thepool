@@ -14,6 +14,11 @@ export const hasValidToken = (): boolean => {
     const payload = JSON.parse(atob(token.split('.')[1]));
     const now = Date.now() / 1000;
     
+    // For mock tokens, always consider them valid if they have proper structure
+    if (token.includes('.mock_signature')) {
+      return payload.exp && payload.exp > now;
+    }
+    
     // Only consider token invalid if it's actually expired (not within 1 minute)
     return payload.exp && payload.exp > now;
   } catch (error) {
