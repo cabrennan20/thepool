@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Authentication Persistence Test</h1>
+    
+    <div id="status" class="test-result info">
+        Ready to test authentication...
+    </div>
+    
+    <div>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testTokenPersistence()">Test Token Persistence</button>
+        <button onclick="testPageNavigation()">Test Page Navigation</button>
+        <button onclick="clearAuth()">Clear Authentication</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        // Mock authentication functions (simplified versions)
+        function generateMockToken(user) {
+            const header = { alg: 'none', typ: 'JWT' };
+            const payload = {
+                userId: user.user_id,
+                username: user.username,
+                isAdmin: user.is_admin,
+                exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+            };
+            
+            const encodedHeader = btoa(JSON.stringify(header));
+            const encodedPayload = btoa(JSON.stringify(payload));
+            
+            return `${encodedHeader}.${encodedPayload}.mock_signature`;
+        }
+        
+        function hasValidToken() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return false;
+            
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const now = Date.now() / 1000;
+                
+                if (token.includes('.mock_signature')) {
+                    return payload.exp && payload.exp > now;
+                }
+                
+                return payload.exp && payload.exp > now;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `test-result ${type}`;
+            status.textContent = message;
+        }
+        
+        function testLogin() {
+            addResult('Testing login...', 'info');
+            
+            const mockUser = {
+                user_id: 1,
+                username: 'testuser',
+                is_admin: false
+            };
+            
+            const token = generateMockToken(mockUser);
+            localStorage.setItem('auth_token', token);
+            
+            if (hasValidToken()) {
+                addResult('✅ Login successful! Token stored and validated.', 'success');
+                updateStatus('Logged in as testuser', 'success');
+            } else {
+                addResult('❌ Login failed! Token not valid.', 'error');
+                updateStatus('Login failed', 'error');
+            }
+        }
+        
+        function testTokenPersistence() {
+            addResult('Testing token persistence...', 'info');
+            
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                addResult('❌ No token found in localStorage', 'error');
+                return;
+            }
+            
+            if (hasValidToken()) {
+                addResult('✅ Token persists and is valid after page actions', 'success');
+                
+                // Test token expiration
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const expirationTime = new Date(payload.exp * 1000);
+                    addResult(`Token expires at: ${expirationTime.toLocaleString()}`, 'info');
+                } catch (error) {
+                    addResult('❌ Failed to read token expiration', 'error');
+                }
+            } else {
+                addResult('❌ Token is not valid or expired', 'error');
+            }
+        }
+        
+        function testPageNavigation() {
+            addResult('Testing page navigation simulation...', 'info');
+            
+            // Simulate page reload by re-checking token
+            setTimeout(() => {
+                if (hasValidToken()) {
+                    addResult('✅ Authentication persists after simulated page navigation', 'success');
+                    updateStatus('Authentication persisted across navigation', 'success');
+                } else {
+                    addResult('❌ Authentication lost after page navigation', 'error');
+                    updateStatus('Authentication lost', 'error');
+                }
+            }, 1000);
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('auth_token');
+            addResult('🗑️ Authentication cleared', 'info');
+            updateStatus('Not authenticated', 'info');
+        }
+        
+        // Check initial state
+        window.onload = function() {
+            if (hasValidToken()) {
+                updateStatus('Already authenticated', 'success');
+            } else {
+                updateStatus('Not authenticated', 'info');
+            }
+        };
+    </script>
+</body>
+</html>
