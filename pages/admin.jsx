@@ -2,21 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
-import { api, type Game, type User, type AdminMessage } from '../lib/api';
+import { api } from '../lib/api';
 
-interface WeeklyScoresData {
-  user_id: number;
-  username: string;
-  week: number;
-  correct_picks: number;
-  total_picks: number;
-  total_points: number;
-  possible_points: number;
-  win_percentage: number;
-  weekly_rank?: number;
-}
-
-const AdminPanel: React.FC = () => {
+const AdminPanel = () => {
   const { user, isLoading } = useAuth();
   const [currentWeekGames, setCurrentWeekGames] = useState<Game[]>([]);
   const [users, setUsers] = useState<User[]>([]);

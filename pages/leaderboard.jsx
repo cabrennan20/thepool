@@ -4,24 +4,7 @@ import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
 import { api } from '../lib/api';
 
-interface LeaderboardEntry {
-  user_id: number;
-  username: string;
-  first_name?: string;
-  last_name?: string;
-  total_correct?: number;
-  total_games?: number;
-  total_picks?: number;
-  total_points?: number;
-  win_percentage?: number;
-  weekly_rank?: number;
-  season_rank?: number;
-  correct_picks?: number;
-  possible_points?: number;
-  week?: number;
-}
-
-const LeaderboardPage: React.FC = () => {
+const LeaderboardPage = () => {
   const { user, isLoading } = useAuth();
   const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [seasonLeaderboard, setSeasonLeaderboard] = useState<LeaderboardEntry[]>([]);

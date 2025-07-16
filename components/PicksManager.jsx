@@ -96,7 +96,7 @@ const PicksManager = () => {
       newPicks.push({
         pick_id: Date.now(), // Temporary ID
         game_id: gameId,
-        user_id: user!.user_id,
+        user_id: user.user_id,
         selected_team: selectedTeam,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
