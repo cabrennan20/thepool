@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api';
 
-const LoginForm: React.FC = () => {
+const LoginForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -12,11 +12,11 @@ const LoginForm: React.FC = () => {
   const [alias, setAlias] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [registerError, setRegisterError] = useState(null);
   const [registerLoading, setRegisterLoading] = useState(false);
   const { login, isLoading, error } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLogin) {
       await login(username, password);

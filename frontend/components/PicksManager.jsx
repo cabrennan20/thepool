@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getTeamHelmetLogo } from '../lib/teamHelmetLogos';
-import { api, type Game, type Pick } from '../lib/api';
+import { api } from '../lib/api';
 
-interface GameWithLogos extends Game {
-  home_logo?: string;
-  away_logo?: string;
-}
+// GameWithLogos extends Game with:
+// {
+//   home_logo?: string;
+//   away_logo?: string;
+// }
 
-const PicksManager: React.FC = () => {
+const PicksManager = () => {
   const { user } = useAuth();
-  const [games, setGames] = useState<GameWithLogos[]>([]);
-  const [picks, setPicks] = useState<Pick[]>([]);
+  const [games, setGames] = useState([]);
+  const [picks, setPicks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [tiebreakerPoints, setTiebreakerPoints] = useState<number | ''>('');
+  const [tiebreakerPoints, setTiebreakerPoints] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,7 +75,7 @@ const PicksManager: React.FC = () => {
     fetchData();
   }, [user]);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -84,11 +85,11 @@ const PicksManager: React.FC = () => {
     });
   };
 
-  const getPick = (gameId: number) => {
+  const getPick = (gameId) => {
     return picks.find(p => p.game_id === gameId);
   };
 
-  const updatePick = async (gameId: number, selectedTeam: string) => {
+  const updatePick = async (gameId, selectedTeam) => {
     const existingPick = getPick(gameId);
     const newPicks = [...picks];
     

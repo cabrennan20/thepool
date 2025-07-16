@@ -459,11 +459,6 @@ const AdminMessagesTab = ({
   const [editingMessage, setEditingMessage] = useState(null);
 
   const handleCreateMessage = async (data) => {
-    title;
-    content;
-    is_pinned;
-    send_email;
-  }) => {
     try {
       await api.createAdminMessage(data);
       onSuccess('Message created successfully!');
@@ -474,12 +469,7 @@ const AdminMessagesTab = ({
     }
   };
 
-  const handleUpdateMessage = async (messageId, data: {
-    title;
-    content;
-    is_pinned;
-    send_email;
-  }) => {
+  const handleUpdateMessage = async (messageId, data) => {
     try {
       await api.updateAdminMessage(messageId, data);
       onSuccess('Message updated successfully!');

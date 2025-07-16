@@ -1,5 +1,5 @@
 // Mock data for ThePool app when backend is not available
-import { type Game, type WeeklyScore, type RecapResponse, type RecapData, type PickPercentage } from './api';
+import { } from './api';
 
 // Mock users data
 export const mockUsers = [
@@ -14,7 +14,7 @@ export const mockUsers = [
 ];
 
 // Mock games data - NFL Week 1 2025 realistic schedule (16 games)
-export const mockGames: Game[] = [
+export const mockGames = [
   // Thursday Night Football
   {
     game_id: 1,
@@ -221,7 +221,7 @@ export const mockGames: Game[] = [
 ];
 
 // Mock weekly scores
-export const mockWeeklyScores: WeeklyScore[] = [
+export const mockWeeklyScores = [
   {
     user_id: 1,
     username: 'john_doe',
@@ -305,7 +305,7 @@ export const mockWeeklyScores: WeeklyScore[] = [
 ];
 
 // Mock recap data
-export const mockRecapData: RecapData[] = [
+export const mockRecapData = [
   {
     user_id: 1,
     alias: 'The Prophet',
@@ -413,7 +413,7 @@ export const mockRecapData: RecapData[] = [
 ];
 
 // Mock pick percentages
-export const mockPickPercentages: Record<number, PickPercentage> = {
+export const mockPickPercentages = {
   1: {
     total_picks: 8,
     home_team_picks: 4,
@@ -472,7 +472,7 @@ export const mockPickPercentages: Record<number, PickPercentage> = {
 };
 
 // Mock recap response
-export const mockRecapResponse: RecapResponse = {
+export const mockRecapResponse = {
   week: 1,
   season: 2025,
   picks_closed: true,

@@ -1,26 +1,4 @@
-interface NFLTeam {
-  idTeam: string;
-  strTeam: string;
-  strTeamShort: string;
-  strTeamAlternate: string;
-  strStadium: string;
-  strLocation: string;
-  intStadiumCapacity: string;
-  strWebsite: string;
-  strBadge: string;
-  strLogo: string;
-  strColour1: string;
-  strColour2: string;
-  strColour3: string;
-  strDescriptionEN: string;
-  intFormedYear: string;
-}
-
-interface TeamsResponse {
-  teams: NFLTeam[];
-}
-
-export async function fetchNFLTeams(): Promise<NFLTeam[]> {
+export async function fetchNFLTeams() {
   try {
     // Use our local API endpoint for better caching and error handling
     const response = await fetch('/api/teams');
@@ -29,7 +7,7 @@ export async function fetchNFLTeams(): Promise<NFLTeam[]> {
       throw new Error(`Failed to fetch teams: ${response.status}`);
     }
     
-    const data: TeamsResponse = await response.json();
+    const data = await response.json();
     return data.teams || [];
   } catch (error) {
     console.error('Error fetching NFL teams:', error);
@@ -38,7 +16,7 @@ export async function fetchNFLTeams(): Promise<NFLTeam[]> {
 }
 
 // Map our team abbreviations to TheSportsDB team names
-const teamAbbreviationMap: Record<string, string> = {
+const teamAbbreviationMap = {
   'ARI': 'Arizona Cardinals',
   'ATL': 'Atlanta Falcons', 
   'BAL': 'Baltimore Ravens',
@@ -73,7 +51,7 @@ const teamAbbreviationMap: Record<string, string> = {
   'WAS': 'Washington Commanders'
 };
 
-export async function getTeamByName(teamName: string): Promise<NFLTeam | null> {
+export async function getTeamByName(teamName) {
   const teams = await fetchNFLTeams();
   
   // If it's an abbreviation, use our mapping first
@@ -102,12 +80,12 @@ export async function getTeamByName(teamName: string): Promise<NFLTeam | null> {
   return team || null;
 }
 
-export async function getTeamLogo(teamName: string): Promise<string | null> {
+export async function getTeamLogo(teamName) {
   const team = await getTeamByName(teamName);
   return team?.strLogo || team?.strBadge || null;
 }
 
-export async function getTeamColors(teamName: string): Promise<{ primary: string; secondary: string; tertiary: string } | null> {
+export async function getTeamColors(teamName) {
   const team = await getTeamByName(teamName);
   if (!team) return null;
   
@@ -118,15 +96,7 @@ export async function getTeamColors(teamName: string): Promise<{ primary: string
   };
 }
 
-export async function getTeamInfo(teamName: string): Promise<{
-  name: string;
-  shortName: string;
-  logo: string;
-  stadium: string;
-  location: string;
-  founded: string;
-  colors: { primary: string; secondary: string; tertiary: string };
-} | null> {
+export async function getTeamInfo(teamName) {
   const team = await getTeamByName(teamName);
   if (!team) return null;
   
@@ -146,11 +116,11 @@ export async function getTeamInfo(teamName: string): Promise<{
 }
 
 // Cache for team data to avoid repeated API calls
-let teamCache: NFLTeam[] | null = null;
-let cacheTimestamp: number = 0;
+let teamCache = null;
+let cacheTimestamp = 0;
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
-export async function getCachedNFLTeams(): Promise<NFLTeam[]> {
+export async function getCachedNFLTeams() {
   const now = Date.now();
   
   if (teamCache && (now - cacheTimestamp) < CACHE_DURATION) {

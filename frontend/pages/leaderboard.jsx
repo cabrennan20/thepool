@@ -4,28 +4,29 @@ import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
 import { api } from '../lib/api';
 
-interface LeaderboardEntry {
-  user_id: number;
-  username: string;
-  first_name?: string;
-  last_name?: string;
-  total_correct?: number;
-  total_games?: number;
-  total_picks?: number;
-  total_points?: number;
-  win_percentage?: number;
-  weekly_rank?: number;
-  season_rank?: number;
-  correct_picks?: number;
-  possible_points?: number;
-  week?: number;
-}
+// LeaderboardEntry object structure:
+// {
+//   user_id: number;
+//   username: string;
+//   first_name?: string;
+//   last_name?: string;
+//   total_correct?: number;
+//   total_games?: number;
+//   total_picks?: number;
+//   total_points?: number;
+//   win_percentage?: number;
+//   weekly_rank?: number;
+//   season_rank?: number;
+//   correct_picks?: number;
+//   possible_points?: number;
+//   week?: number;
+// }
 
-const LeaderboardPage: React.FC = () => {
+const LeaderboardPage = () => {
   const { user, isLoading } = useAuth();
-  const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [seasonLeaderboard, setSeasonLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<'weekly' | 'season'>('weekly');
+  const [weeklyLeaderboard, setWeeklyLeaderboard] = useState([]);
+  const [seasonLeaderboard, setSeasonLeaderboard] = useState([]);
+  const [activeTab, setActiveTab] = useState('weekly');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentWeek, setCurrentWeek] = useState(1);
@@ -79,14 +80,14 @@ const LeaderboardPage: React.FC = () => {
     fetchData();
   }, [user, currentWeek, currentSeason]);
 
-  const getUserDisplayName = (entry: LeaderboardEntry) => {
+  const getUserDisplayName = (entry) => {
     if (entry.first_name && entry.last_name) {
       return `${entry.first_name} ${entry.last_name}`;
     }
     return entry.username;
   };
 
-  const getRankBadgeColor = (rank: number) => {
+  const getRankBadgeColor = (rank) => {
     if (rank === 1) return 'bg-yellow-500 text-white';
     if (rank === 2) return 'bg-gray-400 text-white';
     if (rank === 3) return 'bg-orange-600 text-white';

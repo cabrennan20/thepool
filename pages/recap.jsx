@@ -2,20 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
-import { api, type RecapResponse, type RecapWeek, type PickPercentage } from '../lib/api';
+import { api } from '../lib/api';
 
-const RecapPage: React.FC = () => {
+const RecapPage = () => {
   const { user, isLoading } = useAuth();
-  const [recapData, setRecapData] = useState<RecapResponse | null>(null);
-  const [availableWeeks, setAvailableWeeks] = useState<RecapWeek[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<number>(1);
-  const [selectedSeason, setSelectedSeason] = useState<number>(new Date().getFullYear());
+  const [recapData, setRecapData] = useState(null);
+  const [availableWeeks, setAvailableWeeks] = useState([]);
+  const [selectedWeek, setSelectedWeek] = useState(1);
+  const [selectedSeason, setSelectedSeason] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterMember, setFilterMember] = useState('');
-  const [filterGame, setFilterGame] = useState<number | null>(null);
-  const [mobileView, setMobileView] = useState<'grid' | 'cards' | 'member'>('cards');
-  const [selectedMember, setSelectedMember] = useState<string>('');
+  const [filterGame, setFilterGame] = useState(null);
+  const [mobileView, setMobileView] = useState('cards');
+  const [selectedMember, setSelectedMember] = useState('');
   const [isMobile, setIsMobile] = useState(false);
 
   // Handle mobile detection
@@ -62,7 +62,7 @@ const RecapPage: React.FC = () => {
         
         const data = await api.getRecapData(selectedWeek, selectedSeason);
         setRecapData(data);
-      } catch (err: any) {
+      } catch (err) {
         setError(err.message || 'Failed to load recap data');
         setRecapData(null);
       } finally {
@@ -73,7 +73,7 @@ const RecapPage: React.FC = () => {
     fetchRecapData();
   }, [user, selectedWeek, selectedSeason]);
 
-  const handleWeekChange = (week: number) => {
+  const handleWeekChange = (week) => {
     setSelectedWeek(week);
     setFilterMember('');
     setFilterGame(null);
@@ -112,7 +112,7 @@ const RecapPage: React.FC = () => {
   const selectedWeekData = availableWeeks.find(w => w.week === selectedWeek);
 
   // Helper function to render pick percentages
-  const renderPickPercentages = (gameId: number) => {
+  const renderPickPercentages = (gameId) => {
     if (!recapData?.pick_percentages[gameId]) return null;
     
     const percentages = recapData.pick_percentages[gameId];

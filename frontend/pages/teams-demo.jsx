@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { getAllTeams, getTeamHelmetLogo } from '../lib/teamHelmetLogos';
 
-interface NFLTeam {
-  abbreviation: string;
-  name: string;
-  helmetsLogo: string;
-}
+// NFLTeam object structure:
+// {
+//   abbreviation: string;
+//   name: string;
+//   helmetsLogo: string;
+// }
 
-const TeamsDemo: React.FC = () => {
-  const [teams, setTeams] = useState<NFLTeam[]>([]);
+const TeamsDemo = () => {
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   useEffect(() => {

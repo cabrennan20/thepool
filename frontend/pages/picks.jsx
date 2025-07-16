@@ -78,7 +78,7 @@ const PicksPage = () => {
     fetchData();
   }, [user]);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -88,7 +88,7 @@ const PicksPage = () => {
     });
   };
 
-  const updatePick = (gameId: number, team: string) => {
+  const updatePick = (gameId, team) => {
     const newPicks = picks.filter(p => p.game_id !== gameId);
     if (team) {
       newPicks.push({ 
@@ -101,7 +101,7 @@ const PicksPage = () => {
     setSaved(false);
   };
 
-  const getPick = (gameId: number) => {
+  const getPick = (gameId) => {
     return picks.find(p => p.game_id === gameId);
   };
 

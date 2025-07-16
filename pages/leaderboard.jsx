@@ -62,14 +62,14 @@ const LeaderboardPage = () => {
     fetchData();
   }, [user, currentWeek, currentSeason]);
 
-  const getUserDisplayName = (entry: LeaderboardEntry) => {
+  const getUserDisplayName = (entry) => {
     if (entry.first_name && entry.last_name) {
       return `${entry.first_name} ${entry.last_name}`;
     }
     return entry.username;
   };
 
-  const getRankBadgeColor = (rank: number) => {
+  const getRankBadgeColor = (rank) => {
     if (rank === 1) return 'bg-yellow-500 text-white';
     if (rank === 2) return 'bg-gray-400 text-white';
     if (rank === 3) return 'bg-orange-600 text-white';
