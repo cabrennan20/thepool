@@ -196,7 +196,7 @@ const PicksManager = () => {
                 {/* Game Header */}
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    Game {index + 1}
+                    Week {Math.ceil(new Date(game.game_date).getDate() / 7)}
                   </span>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {formatDate(game.game_date)}
