@@ -1,13 +1,9 @@
 [build]
-builder = "nixpacks"
-buildCommand = "cd backend && npm install"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 watchPatterns = ["backend/**"]
 
 [deploy]
-startCommand = "cd backend && npm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 300
 restartPolicyType = "always"
-
-[nixpacks]
-configFile = "backend/nixpacks.toml"
