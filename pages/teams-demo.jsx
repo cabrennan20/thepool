@@ -3,9 +3,9 @@ import { getAllTeams, getTeamHelmetLogo } from '../lib/teamHelmetLogos';
 
 // NFLTeam object structure:
 // {
-//   abbreviation: string;
-//   name: string;
-//   helmetsLogo: string;
+//   abbreviation: team abbreviation (e.g., "KC", "DAL")
+//   name: full team name (e.g., "Kansas City Chiefs")
+//   helmetsLogo: URL to helmet logo image
 // }
 
 const TeamsDemo = () => {
