@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Dark mode as default */
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-gray-900 text-white;
+}
+
+/* Override any light mode defaults */
+:root {
+  --background: #111827;
+  --foreground: #f9fafb;
+}
