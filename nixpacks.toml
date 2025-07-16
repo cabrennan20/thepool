@@ -1,2 +1,20 @@
+[phases.setup]
+nixPkgs = ['nodejs_18', 'npm']
+
+[phases.install]
+dependsOn = ['setup']
+cmds = [
+  'cd backend',
+  'npm ci --only=production'
+]
+
+[phases.build]
+dependsOn = ['install']
+cmds = ['echo "Build phase complete"']
+
+[phases.start]
+cmd = 'cd backend && npm start'
+
 [variables]
 NODE_ENV = "production"
+NPM_CONFIG_PRODUCTION = "true"
