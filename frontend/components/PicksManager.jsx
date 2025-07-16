@@ -178,6 +178,9 @@ const PicksManager = () => {
       )}
 
       {/* Games Grid */}
+      <div className="mb-4 p-4 bg-blue-500 text-white text-center font-bold text-xl">
+        🔵 FRONTEND COMPONENT RENDERING - FRESH DESIGN 🔵
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {games.map((game, index) => {
           const currentPick = getPick(game.game_id);
