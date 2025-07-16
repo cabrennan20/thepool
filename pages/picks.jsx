@@ -3,27 +3,17 @@ import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
 import { getTeamHelmetLogo, getFullTeamName } from '../lib/teamHelmetLogos';
-import { api, type Game, type Pick } from '../lib/api';
+import { api } from '../lib/api';
 
-interface GameWithLogos extends Game {
-  home_logo?: string;
-  away_logo?: string;
-}
-
-interface PickFormData {
-  game_id: number;
-  selected_team: string;
-}
-
-const PicksPage: React.FC = () => {
+const PicksPage = () => {
   const { user, isLoading } = useAuth();
-  const [games, setGames] = useState<GameWithLogos[]>([]);
-  const [picks, setPicks] = useState<Pick[]>([]);
+  const [games, setGames] = useState([]);
+  const [picks, setPicks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [tiebreakerPoints, setTiebreakerPoints] = useState<number | ''>('');
+  const [tiebreakerPoints, setTiebreakerPoints] = useState('');
   const [quickPickMode, setQuickPickMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
