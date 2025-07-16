@@ -241,9 +241,22 @@ async function initializeDatabase() {
       console.log('🔄 Initializing database schema...');
       const fs = require('fs');
       const path = require('path');
-      const schemaPath = path.join(__dirname, '../database/enhanced_schema.sql');
+      // Try multiple possible paths for the schema file
+      const possiblePaths = [
+        path.join(__dirname, '../database/enhanced_schema.sql'),
+        path.join(__dirname, '../../database/enhanced_schema.sql'),
+        path.join(process.cwd(), 'database/enhanced_schema.sql')
+      ];
       
-      if (fs.existsSync(schemaPath)) {
+      let schemaPath = null;
+      for (const tryPath of possiblePaths) {
+        if (fs.existsSync(tryPath)) {
+          schemaPath = tryPath;
+          break;
+        }
+      }
+      
+      if (schemaPath && fs.existsSync(schemaPath)) {
         const schema = fs.readFileSync(schemaPath, 'utf8');
         await pool.query(schema);
         console.log('✅ Database schema initialized');
@@ -259,6 +272,9 @@ async function initializeDatabase() {
           ON CONFLICT (season, week, home_team, away_team) DO NOTHING;
         `);
         console.log('✅ Sample games inserted');
+      } else {
+        console.log('⚠️  Schema file not found, skipping database initialization');
+        console.log('Searched paths:', possiblePaths);
       }
     } else {
       console.log('✅ Database already initialized');
@@ -292,6 +308,8 @@ app.listen(PORT, '0.0.0.0', async () => {
     console.log(`🔧 Development mode - CORS enabled for ${process.env.FRONTEND_URL || "http://localhost:3000"}`);
   }
   
-  // Initialize database after server starts
-  await initializeDatabase();
+  // Initialize database after server starts (non-blocking)
+  initializeDatabase().catch(err => {
+    console.error('⚠️  Database initialization failed but server continues:', err.message);
+  });
 });
