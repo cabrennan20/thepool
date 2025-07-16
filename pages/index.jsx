@@ -24,11 +24,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-red-500 dark:bg-red-900">
-      <div className="text-center py-20">
-        <h1 className="text-6xl font-bold text-white mb-4">🚨 VERCEL TEST 🚨</h1>
-        <p className="text-2xl text-white">IF YOU SEE THIS RED PAGE, DEPLOYMENT IS WORKING!</p>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
       <PicksManager />
     </div>
