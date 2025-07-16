@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import LoginForm from '../components/LoginForm';
-import { getTeamHelmetLogo } from '../lib/teamHelmetLogos';
+import { getTeamHelmetLogo, getFullTeamName } from '../lib/teamHelmetLogos';
 import { api, type Game, type Pick } from '../lib/api';
 
 interface GameWithLogos extends Game {
@@ -171,49 +171,33 @@ const PicksPage: React.FC = () => {
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <div className="mb-4 sm:mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
+        <div className="flex gap-6">
+          {/* Main Content Area */}
+          <div className="flex-1">
+            <div className="mb-4 sm:mb-6">
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Weekly Picks</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">Select the team you think will win each game.</p>
             </div>
-            
-            {/* Progress indicator - right side on desktop, below on mobile */}
-            {games.length > 0 && (
-              <div className="mt-3 sm:mt-0 sm:ml-8">
-                <div className="flex items-center justify-between sm:justify-end text-sm text-gray-500 dark:text-gray-400">
-                  <span className="sm:hidden">Progress</span>
-                  <span>{picks.length}/{games.length} picks</span>
-                </div>
-                <div className="mt-1 w-full sm:w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${(picks.length / games.length) * 100}%` }}
-                  ></div>
-                </div>
+
+            {/* Quick Pick Mode Toggle (Mobile Only) */}
+            <div className="sm:hidden mb-4">
+              <div className="flex items-center justify-center space-x-4 bg-white dark:bg-gray-800 rounded-lg p-3 shadow">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    onChange={(e) => setQuickPickMode(e.target.checked)}
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Quick Pick Mode</span>
+                </label>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Tap teams to pick quickly</div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Quick Pick Mode Toggle (Mobile Only) */}
-        <div className="sm:hidden mb-4">
-          <div className="flex items-center justify-center space-x-4 bg-white dark:bg-gray-800 rounded-lg p-3 shadow">
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                onChange={(e) => setQuickPickMode(e.target.checked)}
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Quick Pick Mode</span>
-            </label>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Tap teams to pick quickly</div>
-          </div>
-        </div>
-
-        {error ? (
-          <div className="text-red-600 text-center py-4">{error}</div>
-        ) : (
-          <div className="space-y-1 sm:space-y-2 pb-20 sm:pb-0">
+            {error ? (
+              <div className="text-red-600 text-center py-4">{error}</div>
+            ) : (
+              <div className="space-y-2 pb-20 sm:pb-0">
             {games.map((game, index) => {
               const currentPick = getPick(game.game_id);
               const isQuickMode = quickPickMode && isMobile;
@@ -294,126 +278,132 @@ const PicksPage: React.FC = () => {
                 );
               }
 
-              // Regular desktop/tablet view - Ultra compact for 16 games
+              // New Horizontal Compact Design - Fit all games on screen
+              const isFinalGame = index === games.length - 1;
+              const spread = game.spread || 0;
+              const favoredTeam = spread < 0 ? game.home_team : game.away_team;
+              const underdogTeam = spread < 0 ? game.away_team : game.home_team;
+              const isAwayFavored = spread > 0;
+              
               return (
-                <div key={game.game_id} className="bg-white dark:bg-gray-800 shadow rounded-lg p-2 sm:p-3">
-                  {/* Compact Header */}
-                  <div className="flex items-center justify-between mb-2">
-                    {/* Teams Section - Horizontal layout */}
-                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1">
-                      {/* Away Team */}
-                      <div className="flex items-center space-x-1">
+                <div key={game.game_id} className={`bg-white dark:bg-gray-800 shadow rounded-lg border-2 transition-all duration-200 ${
+                  currentPick ? 'border-green-500' : 'border-gray-200 dark:border-gray-600'
+                } ${isFinalGame ? 'ring-2 ring-orange-200 dark:ring-orange-800' : ''}`}>
+                  {/* Game Header */}
+                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-t-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        {formatDate(game.game_date)}
+                      </div>
+                      {isFinalGame && (
+                        <div className="text-xs font-medium text-orange-600 dark:text-orange-400">
+                          Tiebreaker Game
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Main Game Content - Horizontal Layout */}
+                  <div className="p-3">
+                    <div className="flex items-center">
+                      {/* Away Team (Left Side) */}
+                      <button
+                        onClick={() => updatePick(game.game_id, game.away_team)}
+                        className={`flex-1 flex items-center space-x-3 p-3 rounded-lg border-2 transition-all duration-200 ${
+                          currentPick?.selected_team === game.away_team
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900 shadow-md transform scale-105'
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`}
+                      >
                         {game.away_logo && (
                           <img 
                             src={game.away_logo} 
                             alt={game.away_team}
-                            className="w-6 h-6 sm:w-7 sm:h-7 object-contain"
+                            className="w-8 h-8 object-contain flex-shrink-0"
                           />
                         )}
-                        <div className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm">{game.away_team}</div>
+                        <div className="flex-1 text-left">
+                          <div className="font-semibold text-sm text-gray-900 dark:text-white">
+                            {getFullTeamName(game.away_team)}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            @ {isAwayFavored ? `(${Math.abs(spread)})` : `(+${Math.abs(spread)})`}
+                          </div>
+                        </div>
+                        {currentPick?.selected_team === game.away_team && (
+                          <div className="text-green-600 text-lg font-bold">✓</div>
+                        )}
+                      </button>
+                      
+                      {/* Center - Spread Info */}
+                      <div className="px-4 text-center">
+                        <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
+                          vs
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {game.spread ? `${Math.abs(spread)}` : 'PK'}
+                        </div>
                       </div>
                       
-                      <div className="text-xs text-gray-500 dark:text-gray-400">@</div>
-                      
-                      {/* Home Team */}
-                      <div className="flex items-center space-x-1">
-                        <div className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm">{game.home_team}</div>
+                      {/* Home Team (Right Side) */}
+                      <button
+                        onClick={() => updatePick(game.game_id, game.home_team)}
+                        className={`flex-1 flex items-center space-x-3 p-3 rounded-lg border-2 transition-all duration-200 ${
+                          currentPick?.selected_team === game.home_team
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900 shadow-md transform scale-105'
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {currentPick?.selected_team === game.home_team && (
+                          <div className="text-green-600 text-lg font-bold">✓</div>
+                        )}
+                        <div className="flex-1 text-right">
+                          <div className="font-semibold text-sm text-gray-900 dark:text-white">
+                            {getFullTeamName(game.home_team)}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            HOME {!isAwayFavored ? `(${Math.abs(spread)})` : `(+${Math.abs(spread)})`}
+                          </div>
+                        </div>
                         {game.home_logo && (
                           <img 
                             src={game.home_logo} 
                             alt={game.home_team}
-                            className="w-6 h-6 sm:w-7 sm:h-7 object-contain"
+                            className="w-8 h-8 object-contain flex-shrink-0"
                           />
                         )}
-                      </div>
+                      </button>
                     </div>
                     
-                    {/* Game Info - Compact */}
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDate(game.game_date)}
+                    {/* Tiebreaker Section for Final Game */}
+                    {isFinalGame && (
+                      <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Tiebreaker: Total Points
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="200"
+                              value={tiebreakerPoints}
+                              onChange={(e) => setTiebreakerPoints(e.target.value === '' ? '' : parseInt(e.target.value))}
+                              className="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:text-white"
+                              placeholder="e.g., 45"
+                            />
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Enter your prediction for the total combined score of this game
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs font-medium text-gray-900 dark:text-white">
-                        {game.spread ? (game.spread > 0 ? '+' : '') + game.spread : 'PK'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Ultra Compact Team Selection */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                    <label className={`flex items-center p-1 sm:p-2 border rounded cursor-pointer transition-colors ${
-                      currentPick?.selected_team === game.away_team 
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900' 
-                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}>
-                      <input
-                        type="radio"
-                        name={`game_${game.game_id}`}
-                        value={game.away_team}
-                        checked={currentPick?.selected_team === game.away_team}
-                        onChange={(e) => updatePick(game.game_id, e.target.value)}
-                        className="mr-2 h-3 w-3"
-                      />
-                      {game.away_logo && (
-                        <img 
-                          src={game.away_logo} 
-                          alt={game.away_team}
-                          className="w-4 h-4 object-contain mr-2"
-                        />
-                      )}
-                      <span className="font-medium text-xs">{game.away_team}</span>
-                    </label>
-                    
-                    <label className={`flex items-center p-1 sm:p-2 border rounded cursor-pointer transition-colors ${
-                      currentPick?.selected_team === game.home_team 
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900' 
-                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}>
-                      <input
-                        type="radio"
-                        name={`game_${game.game_id}`}
-                        value={game.home_team}
-                        checked={currentPick?.selected_team === game.home_team}
-                        onChange={(e) => updatePick(game.game_id, e.target.value)}
-                        className="mr-2 h-3 w-3"
-                      />
-                      {game.home_logo && (
-                        <img 
-                          src={game.home_logo} 
-                          alt={game.home_team}
-                          className="w-4 h-4 object-contain mr-2"
-                        />
-                      )}
-                      <span className="font-medium text-xs">{game.home_team}</span>
-                    </label>
+                    )}
                   </div>
                 </div>
               );
             })}
 
-            {/* Tiebreaker Section - Compact */}
-            {games.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-3 border border-indigo-200 dark:border-indigo-700">
-                <div className="mb-2">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">Tiebreaker</h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Total points in: <span className="font-medium">{games[games.length - 1]?.away_team} @ {games[games.length - 1]?.home_team}</span>
-                  </p>
-                </div>
-                
-                <div className="max-w-xs">
-                  <input
-                    type="number"
-                    min="0"
-                    max="200"
-                    value={tiebreakerPoints}
-                    onChange={(e) => setTiebreakerPoints(e.target.value === '' ? '' : parseInt(e.target.value))}
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="e.g., 45"
-                  />
-                </div>
-              </div>
-            )}
 
             {/* Submit Button - Enhanced for Quick Pick Mode */}
             <div className="sticky bottom-4 sm:static sm:bottom-auto bg-white sm:bg-transparent p-4 sm:p-0 border-t sm:border-t-0 border-gray-200 sm:border-gray-200 -mx-4 sm:mx-0 sm:text-center">
@@ -502,10 +492,85 @@ const PicksPage: React.FC = () => {
                       );
                     })}
                 </div>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
+          )}
           </div>
-        )}
+
+          {/* Side Panel with Progress */}
+          <div className="hidden lg:block w-80">
+            <div className="sticky top-8">
+              {/* Progress Section */}
+              {games.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Your Progress</h3>
+                  
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
+                      <span>Picks Made</span>
+                      <span>{picks.length}/{games.length}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                      <div 
+                        className="bg-indigo-600 h-3 rounded-full transition-all duration-300" 
+                        style={{ width: `${(picks.length / games.length) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  {picks.length === games.length ? (
+                    <div className="text-green-600 text-sm font-medium flex items-center">
+                      <span className="mr-2">✓</span>
+                      All picks complete!
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 dark:text-gray-400 text-sm">
+                      {games.length - picks.length} picks remaining
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Picks Summary */}
+              {picks.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Your Picks</h3>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {picks
+                      .sort((a, b) => a.game_id - b.game_id)
+                      .map((pick) => {
+                        const game = games.find(g => g.game_id === pick.game_id);
+                        const isSelected = pick.selected_team;
+                        const logo = isSelected === game?.home_team ? game?.home_logo : game?.away_logo;
+                        
+                        return (
+                          <div key={pick.game_id} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                            {logo && (
+                              <img 
+                                src={logo} 
+                                alt={pick.selected_team}
+                                className="w-8 h-8 object-contain"
+                              />
+                            )}
+                            <div className="flex-1">
+                              <div className="font-medium text-sm text-gray-900 dark:text-white">{pick.selected_team}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                vs {game?.home_team === pick.selected_team ? game.away_team : game?.home_team}
+                              </div>
+                            </div>
+                            <div className="text-green-600 text-sm">
+                              ✓
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
