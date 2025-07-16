@@ -1,3 +1,3 @@
-declare module "ai/react" {
-  export * from "@ai-sdk/react";
+declare module 'ai/react' {
+  export * from '@ai-sdk/react';
 }

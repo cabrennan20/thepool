@@ -13,7 +13,7 @@ export async function fetchNFLGames() {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching odds:", error);
+    console.error('Error fetching odds:', error);
     return [];
   }
 }

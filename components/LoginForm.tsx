@@ -200,7 +200,7 @@ const LoginForm: React.FC = () => {
               onClick={() => setIsLogin(!isLogin)}
               className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors duration-200"
             >
-              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+              {isLogin ? 'Don\'t have an account? ' : 'Already have an account? '}
               <span className="text-blue-600 font-semibold">
                 {isLogin ? 'Create one' : 'Sign in'}
               </span>

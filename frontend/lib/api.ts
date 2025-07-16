@@ -1,7 +1,7 @@
 // Enhanced API client for real backend integration
 // Replaces localStorage-based picks with database calls
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thepool-production.up.railway.app/api';
 
 // Import mock data for fallback
 import { 

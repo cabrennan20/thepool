@@ -73,7 +73,7 @@ const PicksPage: React.FC = () => {
             setTiebreakerPoints(finalGamePick.tiebreaker_points);
           }
         } catch (pickError) {
-          console.log('No existing picks found');
+          // No existing picks found, start with empty picks
           setPicks([]);
         }
         
