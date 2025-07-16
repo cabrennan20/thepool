@@ -168,6 +168,25 @@ export function getAllTeams(size: number = 500): Array<{
 }
 
 /**
+ * Get full team name from abbreviation
+ * @param abbreviation - Team abbreviation (e.g., 'KC')
+ * @returns Full team name (e.g., 'Kansas City Chiefs') or abbreviation if not found
+ */
+export function getFullTeamName(abbreviation: string): string {
+  const upperAbbr = abbreviation.toUpperCase();
+  const espnCode = teamAbbreviationToESPN[upperAbbr];
+  
+  if (espnCode) {
+    const fullName = Object.keys(teamNameToESPN).find(
+      name => teamNameToESPN[name] === espnCode
+    );
+    return fullName || abbreviation;
+  }
+  
+  return abbreviation;
+}
+
+/**
  * Fallback function to handle logo loading errors
  * @param teamIdentifier - Team identifier
  * @returns Fallback logo URL (NFL shield)
