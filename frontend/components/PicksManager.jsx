@@ -3,11 +3,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { getTeamHelmetLogo } from '../lib/teamHelmetLogos';
 import { api } from '../lib/api';
 
-// GameWithLogos extends Game with:
-// {
-//   home_logo?: string;
-//   away_logo?: string;
-// }
 
 const PicksManager = () => {
   const { user } = useAuth();
@@ -148,7 +143,7 @@ const PicksManager = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          🏈 Weekly Picks - Fresh Design!
+          🏈 Weekly Picks - Fresh Design! v2
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Make your picks for this week's games. Select the team you think will win.
