@@ -6,10 +6,10 @@ import { api } from '../lib/api';
 
 const AdminPanel = () => {
   const { user, isLoading } = useAuth();
-  const [currentWeekGames, setCurrentWeekGames] = useState<Game[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
-  const [activeTab, setActiveTab] = useState<'games' | 'users' | 'scores' | 'messages'>('games');
+  const [currentWeekGames, setCurrentWeekGames] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [adminMessages, setAdminMessages] = useState([]);
+  const [activeTab, setActiveTab] = useState('games');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -44,7 +44,7 @@ const AdminPanel = () => {
     fetchData();
   }, [user]);
 
-  const updateGameResult = async (gameId: number, homeScore: number, awayScore: number) => {
+  const updateGameResult = async (gameId, homeScore, awayScore) => {
     try {
       setError('');
       setSuccessMessage('');
@@ -63,7 +63,7 @@ const AdminPanel = () => {
     }
   };
 
-  const calculateWeeklyScores = async (week: number, season: number) => {
+  const calculateWeeklyScores = async (week, season) => {
     try {
       setError('');
       setSuccessMessage('');
@@ -78,7 +78,7 @@ const AdminPanel = () => {
     }
   };
 
-  const updateUserStatus = async (userId: number, isAdmin: boolean, isActive: boolean) => {
+  const updateUserStatus = async (userId, isAdmin, isActive) => {
     try {
       setError('');
       setSuccessMessage('');
@@ -285,17 +285,13 @@ const AdminPanel = () => {
 };
 
 // Game Result Form Component
-interface GameResultFormProps {
-  game: Game;
-  onUpdate: (gameId: number, homeScore: number, awayScore: number) => Promise<void>;
-}
 
-const GameResultForm: React.FC<GameResultFormProps> = ({ game, onUpdate }) => {
+const GameResultForm = ({ game, onUpdate }) => {
   const [homeScore, setHomeScore] = useState(game.home_score?.toString() || '');
   const [awayScore, setAwayScore] = useState(game.away_score?.toString() || '');
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!homeScore || !awayScore) return;
     
@@ -307,7 +303,7 @@ const GameResultForm: React.FC<GameResultFormProps> = ({ game, onUpdate }) => {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -379,12 +375,8 @@ const GameResultForm: React.FC<GameResultFormProps> = ({ game, onUpdate }) => {
 };
 
 // User Management Item Component
-interface UserManagementItemProps {
-  user: User;
-  onUpdate: (userId: number, isAdmin: boolean, isActive: boolean) => Promise<void>;
-}
 
-const UserManagementItem: React.FC<UserManagementItemProps> = ({ user, onUpdate }) => {
+const UserManagementItem = ({ user, onUpdate }) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleToggleAdmin = async () => {
@@ -456,27 +448,21 @@ const UserManagementItem: React.FC<UserManagementItemProps> = ({ user, onUpdate 
 };
 
 // Admin Messages Tab Component
-interface AdminMessagesTabProps {
-  messages: AdminMessage[];
-  onMessagesChange: () => Promise<void>;
-  onError: (error: string) => void;
-  onSuccess: (message: string) => void;
-}
 
-const AdminMessagesTab: React.FC<AdminMessagesTabProps> = ({ 
+const AdminMessagesTab = ({ 
   messages, 
   onMessagesChange, 
   onError, 
   onSuccess 
 }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingMessage, setEditingMessage] = useState<AdminMessage | null>(null);
+  const [editingMessage, setEditingMessage] = useState(null);
 
-  const handleCreateMessage = async (data: {
-    title: string;
-    content: string;
-    is_pinned: boolean;
-    send_email: boolean;
+  const handleCreateMessage = async (data) => {
+    title;
+    content;
+    is_pinned;
+    send_email;
   }) => {
     try {
       await api.createAdminMessage(data);
@@ -488,11 +474,11 @@ const AdminMessagesTab: React.FC<AdminMessagesTabProps> = ({
     }
   };
 
-  const handleUpdateMessage = async (messageId: number, data: {
-    title: string;
-    content: string;
-    is_pinned: boolean;
-    send_email: boolean;
+  const handleUpdateMessage = async (messageId, data: {
+    title;
+    content;
+    is_pinned;
+    send_email;
   }) => {
     try {
       await api.updateAdminMessage(messageId, data);
@@ -504,7 +490,7 @@ const AdminMessagesTab: React.FC<AdminMessagesTabProps> = ({
     }
   };
 
-  const handleDeleteMessage = async (messageId: number) => {
+  const handleDeleteMessage = async (messageId) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
     
     try {
@@ -611,19 +597,8 @@ const AdminMessagesTab: React.FC<AdminMessagesTabProps> = ({
 };
 
 // Message Form Component
-interface MessageFormProps {
-  message?: AdminMessage;
-  onSubmit: (data: {
-    title: string;
-    content: string;
-    is_pinned: boolean;
-    send_email: boolean;
-  }) => Promise<void>;
-  onCancel: () => void;
-  title: string;
-}
 
-const MessageForm: React.FC<MessageFormProps> = ({ message, onSubmit, onCancel, title }) => {
+const MessageForm = ({ message, onSubmit, onCancel, title }) => {
   const [formData, setFormData] = useState({
     title: message?.title || '',
     content: message?.content || '',
@@ -632,7 +607,7 @@ const MessageForm: React.FC<MessageFormProps> = ({ message, onSubmit, onCancel, 
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.content) return;
     

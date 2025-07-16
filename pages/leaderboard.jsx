@@ -6,9 +6,9 @@ import { api } from '../lib/api';
 
 const LeaderboardPage = () => {
   const { user, isLoading } = useAuth();
-  const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [seasonLeaderboard, setSeasonLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<'weekly' | 'season'>('weekly');
+  const [weeklyLeaderboard, setWeeklyLeaderboard] = useState([]);
+  const [seasonLeaderboard, setSeasonLeaderboard] = useState([]);
+  const [activeTab, setActiveTab] = useState('weekly');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentWeek, setCurrentWeek] = useState(1);

@@ -94,7 +94,7 @@ const PicksPage = () => {
       newPicks.push({ 
         game_id: gameId, 
         selected_team: team,
-        user_id: user!.user_id
+        user_id: user.user_id
       });
     }
     setPicks(newPicks);
