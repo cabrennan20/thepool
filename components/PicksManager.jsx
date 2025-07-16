@@ -70,7 +70,7 @@ const PicksManager = () => {
     fetchData();
   }, [user]);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -80,11 +80,11 @@ const PicksManager = () => {
     });
   };
 
-  const getPick = (gameId: number) => {
+  const getPick = (gameId) => {
     return picks.find(p => p.game_id === gameId);
   };
 
-  const updatePick = async (gameId: number, selectedTeam: string) => {
+  const updatePick = async (gameId, selectedTeam) => {
     const existingPick = getPick(gameId);
     const newPicks = [...picks];
     
