@@ -1,33 +1,9 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-
-interface NFLTeam {
-  idTeam: string;
-  strTeam: string;
-  strTeamShort: string;
-  strTeamAlternate: string;
-  strStadium: string;
-  strLocation: string;
-  intStadiumCapacity: string;
-  strWebsite: string;
-  strBadge: string;
-  strLogo: string;
-  strColour1: string;
-  strColour2: string;
-  strColour3: string;
-  strDescriptionEN: string;
-  intFormedYear: string;
-}
-
-interface TeamsResponse {
-  teams: NFLTeam[];
-}
-
 // Cache for 1 hour
-let cachedTeams: NFLTeam[] | null = null;
-let cacheTimestamp: number = 0;
+let cachedTeams = null;
+let cacheTimestamp = 0;
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -48,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error(`TheSportsDB API returned status ${response.status}`);
     }
     
-    const data: TeamsResponse = await response.json();
+    const data = await response.json();
     
     // Update cache
     cachedTeams = data.teams || [];
@@ -57,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Add cache headers
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=7200'); // Cache for 1 hour
     res.status(200).json({ teams: cachedTeams });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching NFL teams:', error);
     res.status(500).json({ 
       error: 'Failed to fetch NFL teams',

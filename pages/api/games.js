@@ -1,7 +1,6 @@
-// frontend/pages/api/games.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
+// pages/api/games.js
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req, res) {
   const apiKey = process.env.ODDS_API_KEY;
   const url = `https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?regions=us&markets=spreads,totals,h2h&apiKey=${apiKey}`;
 

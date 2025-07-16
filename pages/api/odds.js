@@ -1,8 +1,6 @@
-// frontend/pages/api/odds.ts
+// pages/api/odds.js
 
-import type { NextApiRequest, NextApiResponse } from 'next';
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -29,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Add CORS headers for potential cross-origin requests
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600'); // Cache for 5 minutes
     res.status(200).json(data);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching odds:', error);
     res.status(500).json({ 
       error: 'Failed to fetch NFL odds',
