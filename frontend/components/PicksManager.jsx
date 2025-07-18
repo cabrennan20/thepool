@@ -281,7 +281,6 @@ const PicksManager = () => {
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {game.away_team}
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">@ Away</div>
                           </div>
                           {currentPick?.selected_team === game.away_team && (
                             <div className="text-blue-600 font-bold text-lg">✓</div>
@@ -289,12 +288,15 @@ const PicksManager = () => {
                         </div>
                       </button>
 
-                      {/* VS Divider with Date */}
+                      {/* VS/@ Divider with Date */}
                       <div className="flex-shrink-0 text-center px-3">
                         <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                           {formatDate(game.game_date)}
                         </div>
-                        <div className="text-gray-400 font-bold text-sm">VS</div>
+                        <div className="text-gray-400 font-bold text-sm">
+                          {/* Show @ if away team is favorite (negative spread), vs if home team is favorite or even */}
+                          {game.spread && game.spread > 0 ? '@' : 'vs'}
+                        </div>
                         {game.spread && (
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {game.spread > 0 ? '+' : ''}{game.spread}
@@ -324,7 +326,6 @@ const PicksManager = () => {
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {game.home_team}
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">🏠 Home</div>
                           </div>
                           {currentPick?.selected_team === game.home_team && (
                             <div className="text-blue-600 font-bold text-lg">✓</div>
