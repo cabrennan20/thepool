@@ -13,6 +13,28 @@ const PicksManager = () => {
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
   const [tiebreakerPoints, setTiebreakerPoints] = useState('');
+  const [validationError, setValidationError] = useState('');
+  const [unselectedGames, setUnselectedGames] = useState([]);
+  const [errorMessageIndex, setErrorMessageIndex] = useState(0);
+
+  const errorMessages = [
+    {
+      title: "Oh my! It appears you've left some games unselected, and that simply won't do!",
+      text: "Each week requires a complete set of picks - think of it as your weekly wellness obligation to the Pool. Please review your selections and ensure every game has been thoughtfully considered. Your fellow participants are counting on your full engagement!"
+    },
+    {
+      title: "Attention, valued Pool participant!",
+      text: "I notice you've attempted to submit an incomplete pick set. This is like trying to leave work early on a Tuesday - technically possible, but not in the spirit of our wonderful community! Please select a winner for each remaining game before proceeding. Remember: completeness brings contentment!"
+    },
+    {
+      title: "Well hello there, eager picker!",
+      text: "I can see you're excited to submit your selections, but let's pump the brakes just a tiny bit. It looks like [X] games still need your expert analysis. Think of this as an opportunity to really showcase your football acumen! Once you've made all your picks, that submit button will be ready and waiting for you."
+    },
+    {
+      title: "Oopsie-daisy! Looks like someone's got a case of the incomplete picks!",
+      text: "Don't worry - this happens to the best of us. Simply scroll up and make sure every single game has your thoughtful selection. After all, we wouldn't want your fellow Pool members to think you're anything less than absolutely dedicated to the process, would we?"
+    }
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,8 +155,38 @@ const PicksManager = () => {
     setPicks(newPicks);
   };
 
+  const validatePicks = () => {
+    const unselected = games.filter(game => !getPick(game.game_id));
+    
+    if (unselected.length > 0) {
+      setUnselectedGames(unselected.map(game => game.game_id));
+      
+      // Rotate error message
+      const currentMessage = errorMessages[errorMessageIndex];
+      const messageWithCount = {
+        ...currentMessage,
+        text: currentMessage.text.replace('[X]', unselected.length.toString())
+      };
+      
+      setValidationError(messageWithCount);
+      setErrorMessageIndex((prev) => (prev + 1) % errorMessages.length);
+      
+      return false;
+    }
+    
+    // Clear validation errors if all games are selected
+    setValidationError('');
+    setUnselectedGames([]);
+    return true;
+  };
+
   const submitPicks = async () => {
     if (!user) return;
+
+    // Validate all games are selected
+    if (!validatePicks()) {
+      return;
+    }
 
     setSubmitting(true);
     setSaved(false);
@@ -235,8 +287,8 @@ const PicksManager = () => {
               <div className="mt-6 border-t pt-4">
                 <button
                   onClick={submitPicks}
-                  disabled={submitting || picks.length === 0}
-                  className={`w-full px-4 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${submitting || picks.length === 0 ? 'bg-gray-400 cursor-not-allowed' : picks.length === games.length ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl' : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'}`}
+                  disabled={submitting}
+                  className={`w-full px-4 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${submitting ? 'bg-gray-400 cursor-not-allowed' : picks.length === games.length ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl' : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'}`}
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center">
@@ -255,7 +307,22 @@ const PicksManager = () => {
                   )}
                 </button>
                 
-                {picks.length > 0 && (
+                {/* Validation Error Message */}
+                {validationError && (
+                  <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <div className="text-red-800 dark:text-red-400 font-medium text-sm mb-2">
+                      {validationError.title}
+                    </div>
+                    <div className="text-red-700 dark:text-red-300 text-sm leading-relaxed mb-3">
+                      {validationError.text}
+                    </div>
+                    <div className="text-blue-600 dark:text-blue-400 text-sm font-medium">
+                      Pro tip: Use the handy progress indicator above to ensure you've conquered every game on this week's schedule!
+                    </div>
+                  </div>
+                )}
+                
+                {picks.length > 0 && !validationError && (
                   <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 text-center">
                     {picks.length} of {games.length} games selected
                   </p>
@@ -285,12 +352,16 @@ const PicksManager = () => {
                     const now = new Date();
                     const isGameStarted = gameDate <= now;
 
+                    const isUnselected = unselectedGames.includes(game.game_id);
+                    
                     return (
                       <div
                         key={game.game_id}
                         className={`flex items-center py-3 px-4 transition-all duration-200 ${
                           index !== dateGames.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
-                        } ${currentPick ? 'bg-green-50 dark:bg-green-900/20' : ''} ${isGameStarted ? 'opacity-60' : ''}`}
+                        } ${currentPick ? 'bg-green-50 dark:bg-green-900/20' : ''} ${isGameStarted ? 'opacity-60' : ''} ${
+                          isUnselected ? 'bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 animate-pulse' : ''
+                        }`}
                       >
                         {/* Time */}
                         <div className="w-16 text-xs text-gray-500 dark:text-gray-400">
@@ -377,6 +448,43 @@ const PicksManager = () => {
         <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-center">
           <div className="text-green-800 dark:text-green-400 font-medium">
             🎉 Your picks have been saved successfully!
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Error Modal */}
+      {validationError && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50 lg:hidden">
+          <div className="bg-white dark:bg-gray-800 w-full max-w-md mx-4 mb-4 rounded-t-3xl shadow-xl animate-in slide-in-from-bottom-4 duration-300">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <div className="text-red-800 dark:text-red-400 font-medium text-lg mb-2">
+                    {validationError.title}
+                  </div>
+                  <div className="text-red-700 dark:text-red-300 text-sm leading-relaxed mb-4">
+                    {validationError.text}
+                  </div>
+                  <div className="text-blue-600 dark:text-blue-400 text-sm font-medium">
+                    Pro tip: Use the handy progress indicator above to ensure you've conquered every game on this week's schedule!
+                  </div>
+                </div>
+                <button
+                  onClick={() => setValidationError('')}
+                  className="ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <button
+                onClick={() => setValidationError('')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-colors"
+              >
+                Got it!
+              </button>
+            </div>
           </div>
         </div>
       )}
