@@ -80,6 +80,33 @@ const PicksManager = () => {
     });
   };
 
+  const formatDateHeader = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
+    }).toUpperCase();
+  };
+
+  const formatTime = (dateString) => {
+    return new Date(dateString).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  };
+
+  const groupGamesByDate = (games) => {
+    const grouped = {};
+    games.forEach(game => {
+      const dateKey = new Date(game.game_date).toDateString();
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(game);
+    });
+    return grouped;
+  };
+
   const getPick = (gameId) => {
     return picks.find(p => p.game_id === gameId);
   };
@@ -238,107 +265,110 @@ const PicksManager = () => {
           )}
         </div>
 
-        {/* Games List - Horizontal Cards Stacked Vertically */}
+        {/* Games List - ESPN Style with Date Headers */}
         <div className="flex-1">
+          {Object.entries(groupGamesByDate(games)).map(([dateKey, dateGames]) => {
+            const dateHeader = formatDateHeader(dateGames[0].game_date);
+            
+            return (
+              <div key={dateKey} className="mb-4">
+                {/* Date Header */}
+                <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide">
+                  {dateHeader}
+                </div>
+                
+                {/* Games for this date */}
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                  {dateGames.map((game, index) => {
+                    const currentPick = getPick(game.game_id);
+                    const gameDate = new Date(game.game_date);
+                    const now = new Date();
+                    const isGameStarted = gameDate <= now;
 
-          {/* Games List - Horizontal Cards Stacked Vertically */}
-          <div className="space-y-2">
-            {games.map((game, index) => {
-              const currentPick = getPick(game.game_id);
-              const gameDate = new Date(game.game_date);
-              const now = new Date();
-              const isGameStarted = gameDate <= now;
-
-              return (
-                <div
-                  key={game.game_id}
-                  className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border-2 transition-all duration-200 ${
-                    currentPick ? 'border-green-500' : 'border-gray-200 dark:border-gray-700'
-                  } ${isGameStarted ? 'opacity-60' : ''}`}
-                >
-                  <div className="p-2">
-                    {/* Horizontal Team Layout with Date */}
-                    <div className="flex items-center space-x-2">
-                      {/* Away Team */}
-                      <button
-                        onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
-                        disabled={isGameStarted}
-                        className={`flex-1 max-w-[280px] p-2 rounded-lg border-2 transition-all duration-200 ${
-                          currentPick?.selected_team === game.away_team
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                        } ${isGameStarted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                    return (
+                      <div
+                        key={game.game_id}
+                        className={`flex items-center py-3 px-4 transition-all duration-200 ${
+                          index !== dateGames.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
+                        } ${currentPick ? 'bg-green-50 dark:bg-green-900/20' : ''} ${isGameStarted ? 'opacity-60' : ''}`}
                       >
-                        <div className="flex items-center space-x-2">
-                          {game.away_logo && (
-                            <img 
-                              src={game.away_logo} 
-                              alt={game.away_team}
-                              className="w-8 h-8 object-contain"
-                            />
-                          )}
-                          <div className="text-left flex-1">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {/* Time */}
+                        <div className="w-16 text-xs text-gray-500 dark:text-gray-400">
+                          {formatTime(game.game_date)}
+                        </div>
+                        
+                        {/* Away Team */}
+                        <button
+                          onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
+                          disabled={isGameStarted}
+                          className={`flex-1 flex items-center justify-between py-2 px-3 mx-1 rounded transition-all duration-200 ${
+                            currentPick?.selected_team === game.away_team
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500'
+                              : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-2 border-transparent'
+                          } ${isGameStarted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            {game.away_logo && (
+                              <img 
+                                src={game.away_logo} 
+                                alt={game.away_team}
+                                className="w-6 h-6 object-contain"
+                              />
+                            )}
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
                               {game.away_team}
-                            </div>
+                            </span>
                           </div>
                           {currentPick?.selected_team === game.away_team && (
                             <div className="text-blue-600 font-bold text-lg">✓</div>
                           )}
-                        </div>
-                      </button>
+                        </button>
 
-                      {/* VS/@ Divider with Date */}
-                      <div className="flex-shrink-0 text-center px-3">
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          {formatDate(game.game_date)}
-                        </div>
-                        <div className="text-gray-400 font-bold text-sm">
-                          {/* Show @ if away team is favorite (negative spread), vs if home team is favorite or even */}
-                          {game.spread && game.spread > 0 ? '@' : 'vs'}
-                        </div>
-                        {game.spread && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {game.spread > 0 ? '+' : ''}{game.spread}
+                        {/* VS/@ with Spread */}
+                        <div className="flex flex-col items-center px-3">
+                          <div className="text-gray-400 font-bold text-sm">
+                            {game.spread && game.spread > 0 ? '@' : 'vs'}
                           </div>
-                        )}
-                      </div>
-
-                      {/* Home Team */}
-                      <button
-                        onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
-                        disabled={isGameStarted}
-                        className={`flex-1 max-w-[280px] p-2 rounded-lg border-2 transition-all duration-200 ${
-                          currentPick?.selected_team === game.home_team
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                        } ${isGameStarted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                      >
-                        <div className="flex items-center space-x-2">
-                          {game.home_logo && (
-                            <img 
-                              src={game.home_logo} 
-                              alt={game.home_team}
-                              className="w-8 h-8 object-contain"
-                            />
-                          )}
-                          <div className="text-left flex-1">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {game.home_team}
+                          {game.spread && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {game.spread > 0 ? '+' : ''}{game.spread}
                             </div>
+                          )}
+                        </div>
+
+                        {/* Home Team */}
+                        <button
+                          onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
+                          disabled={isGameStarted}
+                          className={`flex-1 flex items-center justify-between py-2 px-3 mx-1 rounded transition-all duration-200 ${
+                            currentPick?.selected_team === game.home_team
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500'
+                              : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-2 border-transparent'
+                          } ${isGameStarted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            {game.home_logo && (
+                              <img 
+                                src={game.home_logo} 
+                                alt={game.home_team}
+                                className="w-6 h-6 object-contain"
+                              />
+                            )}
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {game.home_team}
+                            </span>
                           </div>
                           {currentPick?.selected_team === game.home_team && (
                             <div className="text-blue-600 font-bold text-lg">✓</div>
                           )}
-                        </div>
-                      </button>
-                    </div>
-
-                  </div>
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
