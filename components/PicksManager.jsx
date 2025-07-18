@@ -258,10 +258,7 @@ const PicksManager = () => {
                 >
                   <div className="p-2">
                     {/* Game Header */}
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-900 dark:text-white">
-                        Week {Math.ceil(new Date(game.game_date).getDate() / 7)} - Game {index + 1}
-                      </span>
+                    <div className="flex items-center justify-end mb-2">
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {formatDate(game.game_date)}
                       </div>
@@ -273,7 +270,7 @@ const PicksManager = () => {
                       <button
                         onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
                         disabled={isGameStarted}
-                        className={`flex-1 p-2 rounded-lg border-2 transition-all duration-200 ${
+                        className={`flex-1 max-w-[140px] p-2 rounded-lg border-2 transition-all duration-200 ${
                           currentPick?.selected_team === game.away_team
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                             : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
@@ -300,13 +297,20 @@ const PicksManager = () => {
                       </button>
 
                       {/* VS Divider */}
-                      <div className="flex-shrink-0 text-gray-400 font-bold text-sm">VS</div>
+                      <div className="flex-shrink-0 text-center px-2">
+                        <div className="text-gray-400 font-bold text-sm">VS</div>
+                        {game.spread && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {game.spread > 0 ? '+' : ''}{game.spread}
+                          </div>
+                        )}
+                      </div>
 
                       {/* Home Team */}
                       <button
                         onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
                         disabled={isGameStarted}
-                        className={`flex-1 p-2 rounded-lg border-2 transition-all duration-200 ${
+                        className={`flex-1 max-w-[140px] p-2 rounded-lg border-2 transition-all duration-200 ${
                           currentPick?.selected_team === game.home_team
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                             : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
@@ -333,12 +337,6 @@ const PicksManager = () => {
                       </button>
                     </div>
 
-                    {/* Spread Info */}
-                    {game.spread && (
-                      <div className="mt-1 text-center text-xs text-gray-500 dark:text-gray-400">
-                        Spread: {game.spread > 0 ? '+' : ''}{game.spread}
-                      </div>
-                    )}
                   </div>
                 </div>
               );
