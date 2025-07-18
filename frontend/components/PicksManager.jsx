@@ -301,7 +301,7 @@ const PicksManager = () => {
                         <button
                           onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
                           disabled={isGameStarted}
-                          className={`flex-1 flex items-center justify-between py-2 px-3 mx-1 rounded transition-all duration-200 ${
+                          className={`flex-1 flex items-center justify-center py-2 px-3 mx-1 rounded transition-all duration-200 relative ${
                             currentPick?.selected_team === game.away_team
                               ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500'
                               : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-2 border-transparent'
@@ -320,7 +320,7 @@ const PicksManager = () => {
                             </span>
                           </div>
                           {currentPick?.selected_team === game.away_team && (
-                            <div className="text-blue-600 font-bold text-lg">✓</div>
+                            <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
                           )}
                         </button>
 
@@ -340,7 +340,7 @@ const PicksManager = () => {
                         <button
                           onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
                           disabled={isGameStarted}
-                          className={`flex-1 flex items-center justify-between py-2 px-3 mx-1 rounded transition-all duration-200 ${
+                          className={`flex-1 flex items-center justify-center py-2 px-3 mx-1 rounded transition-all duration-200 relative ${
                             currentPick?.selected_team === game.home_team
                               ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500'
                               : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-2 border-transparent'
@@ -359,7 +359,7 @@ const PicksManager = () => {
                             </span>
                           </div>
                           {currentPick?.selected_team === game.home_team && (
-                            <div className="text-blue-600 font-bold text-lg">✓</div>
+                            <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
                           )}
                         </button>
                       </div>
