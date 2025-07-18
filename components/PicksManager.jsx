@@ -143,7 +143,7 @@ const PicksManager = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          🏈 Weekly Picks - Fresh Design! v2
+          🏈 Weekly Picks
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Make your picks for this week's games. Select the team you think will win.
@@ -241,13 +241,8 @@ const PicksManager = () => {
         {/* Games List - Horizontal Cards Stacked Vertically */}
         <div className="flex-1">
 
-          {/* Debug Banner */}
-          <div className="mb-4 p-4 bg-red-500 text-white text-center font-bold text-xl">
-            🔴 ROOT COMPONENT RENDERING - FRESH DESIGN 🔴
-          </div>
-          
           {/* Games List - Horizontal Cards Stacked Vertically */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             {games.map((game, index) => {
               const currentPick = getPick(game.game_id);
               const gameDate = new Date(game.game_date);
@@ -261,10 +256,10 @@ const PicksManager = () => {
                     currentPick ? 'border-green-500' : 'border-gray-200 dark:border-gray-700'
                   } ${isGameStarted ? 'opacity-60' : ''}`}
                 >
-                  <div className="p-4">
+                  <div className="p-2">
                     {/* Game Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">
                         Week {Math.ceil(new Date(game.game_date).getDate() / 7)} - Game {index + 1}
                       </span>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -273,66 +268,66 @@ const PicksManager = () => {
                     </div>
 
                     {/* Horizontal Team Layout */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
                       {/* Away Team */}
                       <button
                         onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
                         disabled={isGameStarted}
-                        className={`flex-1 p-4 rounded-lg border-2 transition-all duration-200 ${
+                        className={`flex-1 p-2 rounded-lg border-2 transition-all duration-200 ${
                           currentPick?.selected_team === game.away_team
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                             : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                         } ${isGameStarted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                       >
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
                           {game.away_logo && (
                             <img 
                               src={game.away_logo} 
                               alt={game.away_team}
-                              className="w-10 h-10 object-contain"
+                              className="w-8 h-8 object-contain"
                             />
                           )}
                           <div className="text-left flex-1">
-                            <div className="font-medium text-gray-900 dark:text-white">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {game.away_team}
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">@ Away</div>
                           </div>
                           {currentPick?.selected_team === game.away_team && (
-                            <div className="text-blue-600 font-bold text-xl">✓</div>
+                            <div className="text-blue-600 font-bold text-lg">✓</div>
                           )}
                         </div>
                       </button>
 
                       {/* VS Divider */}
-                      <div className="flex-shrink-0 text-gray-400 font-bold">VS</div>
+                      <div className="flex-shrink-0 text-gray-400 font-bold text-sm">VS</div>
 
                       {/* Home Team */}
                       <button
                         onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
                         disabled={isGameStarted}
-                        className={`flex-1 p-4 rounded-lg border-2 transition-all duration-200 ${
+                        className={`flex-1 p-2 rounded-lg border-2 transition-all duration-200 ${
                           currentPick?.selected_team === game.home_team
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                             : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                         } ${isGameStarted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                       >
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
                           {game.home_logo && (
                             <img 
                               src={game.home_logo} 
                               alt={game.home_team}
-                              className="w-10 h-10 object-contain"
+                              className="w-8 h-8 object-contain"
                             />
                           )}
                           <div className="text-left flex-1">
-                            <div className="font-medium text-gray-900 dark:text-white">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {game.home_team}
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">🏠 Home</div>
                           </div>
                           {currentPick?.selected_team === game.home_team && (
-                            <div className="text-blue-600 font-bold text-xl">✓</div>
+                            <div className="text-blue-600 font-bold text-lg">✓</div>
                           )}
                         </div>
                       </button>
@@ -340,7 +335,7 @@ const PicksManager = () => {
 
                     {/* Spread Info */}
                     {game.spread && (
-                      <div className="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                      <div className="mt-1 text-center text-xs text-gray-500 dark:text-gray-400">
                         Spread: {game.spread > 0 ? '+' : ''}{game.spread}
                       </div>
                     )}
