@@ -301,11 +301,11 @@ const PicksManager = () => {
                         <button
                           onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
                           disabled={isGameStarted}
-                          className={`flex-1 flex items-center justify-center py-2 px-3 mx-1 rounded transition-all duration-200 relative ${
+                          className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
                             currentPick?.selected_team === game.away_team
-                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500'
-                              : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-2 border-transparent'
-                          } ${isGameStarted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
+                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                          } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                         >
                           <div className="flex items-center space-x-2">
                             {game.away_logo && (
@@ -340,11 +340,11 @@ const PicksManager = () => {
                         <button
                           onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
                           disabled={isGameStarted}
-                          className={`flex-1 flex items-center justify-center py-2 px-3 mx-1 rounded transition-all duration-200 relative ${
+                          className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
                             currentPick?.selected_team === game.home_team
-                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500'
-                              : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-2 border-transparent'
-                          } ${isGameStarted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
+                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                          } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                         >
                           <div className="flex items-center space-x-2">
                             {game.home_logo && (
