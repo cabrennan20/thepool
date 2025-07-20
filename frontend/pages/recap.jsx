@@ -13,10 +13,11 @@ const RecapPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterMember, setFilterMember] = useState('');
-  const [filterGame, setFilterGame] = useState(null);
+  const [selectedGameIds, setSelectedGameIds] = useState([]);
   const [mobileView, setMobileView] = useState('cards');
   const [selectedMember, setSelectedMember] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [showGameDropdown, setShowGameDropdown] = useState(false);
 
   // Handle mobile detection
   useEffect(() => {
@@ -28,6 +29,18 @@ const RecapPage = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showGameDropdown && !event.target.closest('[data-game-dropdown]')) {
+        setShowGameDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showGameDropdown]);
 
   useEffect(() => {
     const fetchAvailableWeeks = async () => {
@@ -76,11 +89,32 @@ const RecapPage = () => {
   const handleWeekChange = (week) => {
     setSelectedWeek(week);
     setFilterMember('');
-    setFilterGame(null);
+    setSelectedGameIds([]);
   };
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleGameToggle = (gameId) => {
+    setSelectedGameIds(prev => 
+      prev.includes(gameId) 
+        ? prev.filter(id => id !== gameId)
+        : [...prev, gameId]
+    );
+  };
+
+  const handleSelectAllGames = () => {
+    if (selectedGameIds.length === recapData?.games.length) {
+      setSelectedGameIds([]);
+    } else {
+      setSelectedGameIds(recapData?.games.map(game => game.game_id) || []);
+    }
+  };
+
+  const clearFilters = () => {
+    setFilterMember('');
+    setSelectedGameIds([]);
   };
 
   const filteredRecapData = recapData ? recapData.recap_data.filter(member => {
@@ -91,7 +125,7 @@ const RecapPage = () => {
   }) : [];
 
   const filteredGames = recapData ? recapData.games.filter(game => {
-    if (filterGame && game.game_id !== filterGame) {
+    if (selectedGameIds.length > 0 && !selectedGameIds.includes(game.game_id)) {
       return false;
     }
     return true;
@@ -110,25 +144,6 @@ const RecapPage = () => {
   }
 
   const selectedWeekData = availableWeeks.find(w => w.week === selectedWeek);
-
-  // Helper function to render pick percentages
-  const renderPickPercentages = (gameId) => {
-    if (!recapData?.pick_percentages[gameId]) return null;
-    
-    const percentages = recapData.pick_percentages[gameId];
-    
-    return (
-      <div className="mt-1 text-[10px] space-y-0.5">
-        <div className="flex justify-between">
-          <span className="text-green-600 font-medium">{percentages.away_team_percentage}%</span>
-          <span className="text-blue-600 font-medium">{percentages.home_team_percentage}%</span>
-        </div>
-        {percentages.is_upset && (
-          <div className="text-orange-600 font-bold">UPSET!</div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -181,27 +196,93 @@ const RecapPage = () => {
             />
             
             {recapData && (
-              <select
-                value={filterGame || ''}
-                onChange={(e) => setFilterGame(e.target.value ? parseInt(e.target.value) : null)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="">All Games</option>
-                {recapData.games.map(game => (
-                  <option key={game.game_id} value={game.game_id}>
-                    {game.away_team} @ {game.home_team}
-                  </option>
-                ))}
-              </select>
+              <div className="relative" data-game-dropdown>
+                <button
+                  onClick={() => setShowGameDropdown(!showGameDropdown)}
+                  className={`px-3 py-2 border rounded-md text-sm flex items-center gap-2 min-w-[120px] justify-between ${
+                    selectedGameIds.length > 0 
+                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span>
+                    {selectedGameIds.length === 0 
+                      ? 'Filter Games' 
+                      : `${selectedGameIds.length} Game${selectedGameIds.length === 1 ? '' : 's'}`
+                    }
+                  </span>
+                  <svg 
+                    className={`w-4 h-4 transition-transform ${showGameDropdown ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {showGameDropdown && (
+                  <div className="absolute z-50 mt-1 w-80 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-y-auto">
+                    <div className="p-3 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedGameIds.length === recapData.games.length}
+                            onChange={handleSelectAllGames}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm font-medium text-gray-900">
+                            {selectedGameIds.length === recapData.games.length ? 'Deselect All' : 'Select All'}
+                          </span>
+                        </label>
+                        <button
+                          onClick={() => setShowGameDropdown(false)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {recapData.games.map(game => (
+                        <label 
+                          key={game.game_id} 
+                          className="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedGameIds.includes(game.game_id)}
+                            onChange={() => handleGameToggle(game.game_id)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-900">
+                              {game.away_team} @ {game.home_team}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(game.game_date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
             
-            {(filterMember || filterGame) && (
+            {(filterMember || selectedGameIds.length > 0) && (
               <button
-                onClick={() => {
-                  setFilterMember('');
-                  setFilterGame(null);
-                }}
-                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                onClick={clearFilters}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Clear Filters
               </button>
@@ -232,42 +313,29 @@ const RecapPage = () => {
           <div className="mb-6 bg-white rounded-lg shadow">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Pick Consensus Overview</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {recapData.games.slice(0, 6).map(game => {
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3">
+                {recapData.games.map(game => {
                   const percentages = recapData.pick_percentages[game.game_id];
                   if (!percentages) return null;
                   
                   return (
-                    <div key={game.game_id} className="border border-gray-200 rounded-lg p-3">
-                      <div className="text-sm font-medium text-gray-900 mb-2">
-                        {game.away_team} @ {game.home_team}
-                      </div>
-                      <div className="space-y-2">
+                    <div key={game.game_id} className="border border-gray-200 rounded-lg p-2">
+                      <div className="space-y-1.5">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">{game.away_team}</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
-                              {percentages.away_team_percentage}%
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              ({percentages.away_team_picks} picks)
-                            </div>
+                          <span className="text-xs text-gray-600 truncate">{game.away_team}</span>
+                          <div className="px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                            {percentages.away_team_percentage}%
                           </div>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">{game.home_team}</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                              {percentages.home_team_percentage}%
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              ({percentages.home_team_picks} picks)
-                            </div>
+                          <span className="text-xs text-gray-600 truncate">{game.home_team}</span>
+                          <div className="px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                            {percentages.home_team_percentage}%
                           </div>
                         </div>
                         {percentages.is_upset && (
-                          <div className="text-center mt-2">
-                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-bold">
+                          <div className="text-center">
+                            <span className="bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded text-xs font-bold">
                               UPSET!
                             </span>
                           </div>
@@ -277,14 +345,6 @@ const RecapPage = () => {
                   );
                 })}
               </div>
-              
-              {recapData.games.length > 6 && (
-                <div className="mt-4 text-center">
-                  <div className="text-sm text-gray-500">
-                    Showing first 6 games. Full percentages visible in grid view below.
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -397,7 +457,6 @@ const RecapPage = () => {
                               minute: '2-digit'
                             })}
                           </div>
-                          {renderPickPercentages(game.game_id)}
                         </div>
                       </th>
                     ))}
@@ -423,11 +482,7 @@ const RecapPage = () => {
                             isMobile ? 'px-1 py-2 text-xs' : 'px-2 py-4 text-sm'
                           }`}>
                             {pick ? (
-                              <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                pick === game.home_team 
-                                  ? 'bg-blue-100 text-blue-800' 
-                                  : 'bg-green-100 text-green-800'
-                              }`}>
+                              <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
                                 {pick}
                               </span>
                             ) : (
@@ -477,7 +532,6 @@ const RecapPage = () => {
                       <div className="font-medium text-sm">{game.away_team}</div>
                       <div className="text-xs text-gray-500">@</div>
                       <div className="font-medium text-sm">{game.home_team}</div>
-                      {renderPickPercentages(game.game_id)}
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 text-right">
@@ -498,11 +552,7 @@ const RecapPage = () => {
                       <div key={member.user_id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                         <span className="text-sm font-medium text-gray-900 truncate pr-2">{member.alias}</span>
                         {pick ? (
-                          <span className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${
-                            pick === game.home_team 
-                              ? 'bg-blue-100 text-blue-800' 
-                              : 'bg-green-100 text-green-800'
-                          }`}>
+                          <span className="px-2 py-1 rounded text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-800">
                             {pick}
                           </span>
                         ) : (
@@ -557,11 +607,7 @@ const RecapPage = () => {
                           </div>
                           <div className="ml-3">
                             {pick ? (
-                              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                pick === game.home_team 
-                                  ? 'bg-blue-100 text-blue-800' 
-                                  : 'bg-green-100 text-green-800'
-                              }`}>
+                              <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
                                 {pick}
                               </span>
                             ) : (
