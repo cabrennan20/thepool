@@ -17,7 +17,7 @@ const registerSchema = z.object({
   first_name: z.string().min(1).max(50).optional(),
   last_name: z.string().min(1).max(50).optional(),
   alias: z.string().min(2).max(50).regex(/^[a-zA-Z0-9\s&'-]+$/, 'Alias can only contain letters, numbers, spaces, and common symbols'),
-  phone: z.string().min(10).max(20).regex(/^[\d\s\-\+\(\)\.]+$/, 'Phone number can only contain digits, spaces, and common symbols'),
+  phone: z.string().min(10).max(20).regex(/^[\d\s\-+().\s]+$/, 'Phone number can only contain digits, spaces, and common symbols'),
   address: z.string().min(5).max(200)
 });
 
