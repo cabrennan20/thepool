@@ -254,42 +254,48 @@ const RecapPage = () => {
           <div className="mb-6 bg-white rounded-lg shadow">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Pick Consensus Overview</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {recapData.games.slice(0, 6).map(game => {
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3">
+                {recapData.games.map(game => {
                   const percentages = recapData.pick_percentages[game.game_id];
                   if (!percentages) return null;
                   
+                  // Determine if teams are favored for color coding
+                  const awayTeamFavored = isTeamFavored(game.away_team, game);
+                  const homeTeamFavored = isTeamFavored(game.home_team, game);
+                  
+                  // Get color styling for percentages based on favorite/underdog status
+                  const getPercentageColor = (team, isFavorite) => {
+                    if (isFavorite === true) {
+                      return 'bg-blue-100 text-blue-800'; // Favorite - light blue
+                    } else if (isFavorite === false) {
+                      return 'bg-pink-100 text-pink-800'; // Underdog - light pink  
+                    } else {
+                      return 'bg-gray-100 text-gray-800'; // No spread data
+                    }
+                  };
+                  
                   return (
-                    <div key={game.game_id} className="border border-gray-200 rounded-lg p-3">
-                      <div className="text-sm font-medium text-gray-900 mb-2">
-                        {getTeamNickname(game.away_team)} @ {getTeamNickname(game.home_team)}
-                      </div>
-                      <div className="space-y-2">
+                    <div key={game.game_id} className="border border-gray-200 rounded-lg p-2">
+                      <div className="space-y-1.5">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">{getTeamNickname(game.away_team)}</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
-                              {percentages.away_team_percentage}%
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              ({percentages.away_team_picks} picks)
-                            </div>
+                          <span className="text-xs text-gray-600 truncate">{getTeamNickname(game.away_team)}</span>
+                          <div className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                            getPercentageColor(game.away_team, awayTeamFavored)
+                          }`}>
+                            {percentages.away_team_percentage}%
                           </div>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">{getTeamNickname(game.home_team)}</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                              {percentages.home_team_percentage}%
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              ({percentages.home_team_picks} picks)
-                            </div>
+                          <span className="text-xs text-gray-600 truncate">{getTeamNickname(game.home_team)}</span>
+                          <div className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                            getPercentageColor(game.home_team, homeTeamFavored)
+                          }`}>
+                            {percentages.home_team_percentage}%
                           </div>
                         </div>
                         {percentages.is_upset && (
-                          <div className="text-center mt-2">
-                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-bold">
+                          <div className="text-center">
+                            <span className="bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded text-xs font-bold">
                               UPSET!
                             </span>
                           </div>
@@ -299,14 +305,6 @@ const RecapPage = () => {
                   );
                 })}
               </div>
-              
-              {recapData.games.length > 6 && (
-                <div className="mt-4 text-center">
-                  <div className="text-sm text-gray-500">
-                    Showing first 6 games. Full percentages visible in grid view below.
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}
