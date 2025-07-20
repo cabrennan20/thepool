@@ -111,6 +111,35 @@ const RecapPage = () => {
 
   const selectedWeekData = availableWeeks.find(w => w.week === selectedWeek);
 
+  // Helper function to determine if a team is favored based on spread
+  const isTeamFavored = (team, game) => {
+    if (!game.spread) return null;
+    
+    // Negative spread means home team is favored
+    // Positive spread means away team is favored
+    if (team === game.home_team) {
+      return game.spread < 0; // Home team favored if spread is negative
+    } else {
+      return game.spread > 0; // Away team favored if spread is positive
+    }
+  };
+
+  // Helper function to get team pick styling with favorite/underdog colors
+  const getTeamPickStyling = (pick, game) => {
+    const isFavorite = isTeamFavored(pick, game);
+    
+    if (isFavorite === true) {
+      // Favorite - light blue
+      return 'bg-blue-100 text-blue-800';
+    } else if (isFavorite === false) {
+      // Underdog - light pink
+      return 'bg-pink-100 text-pink-800';
+    } else {
+      // No spread data available - default styling
+      return pick === game.home_team ? 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800';
+    }
+  };
+
   // Helper function to render pick percentages
   const renderPickPercentages = (gameId) => {
     if (!recapData?.pick_percentages[gameId]) return null;
@@ -424,9 +453,7 @@ const RecapPage = () => {
                           }`}>
                             {pick ? (
                               <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                pick === game.home_team 
-                                  ? 'bg-blue-100 text-blue-800' 
-                                  : 'bg-green-100 text-green-800'
+                                getTeamPickStyling(pick, game)
                               }`}>
                                 {pick}
                               </span>
@@ -499,9 +526,7 @@ const RecapPage = () => {
                         <span className="text-sm font-medium text-gray-900 truncate pr-2">{member.alias}</span>
                         {pick ? (
                           <span className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${
-                            pick === game.home_team 
-                              ? 'bg-blue-100 text-blue-800' 
-                              : 'bg-green-100 text-green-800'
+                            getTeamPickStyling(pick, game)
                           }`}>
                             {pick}
                           </span>
@@ -558,9 +583,7 @@ const RecapPage = () => {
                           <div className="ml-3">
                             {pick ? (
                               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                pick === game.home_team 
-                                  ? 'bg-blue-100 text-blue-800' 
-                                  : 'bg-green-100 text-green-800'
+                                getTeamPickStyling(pick, game)
                               }`}>
                                 {pick}
                               </span>
