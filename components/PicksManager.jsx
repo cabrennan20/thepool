@@ -16,6 +16,7 @@ const PicksManager = () => {
   const [validationError, setValidationError] = useState('');
   const [unselectedGames, setUnselectedGames] = useState([]);
   const [errorMessageIndex, setErrorMessageIndex] = useState(0);
+  const [tiebreakerErrorIndex, setTiebreakerErrorIndex] = useState(0);
 
   const errorMessages = [
     {
@@ -33,6 +34,21 @@ const PicksManager = () => {
     {
       title: "Oopsie-daisy! Looks like someone's got a case of the incomplete picks!",
       text: "Don't worry - this happens to the best of us. Simply scroll up and make sure every single game has your thoughtful selection. After all, we wouldn't want your fellow Pool members to think you're anything less than absolutely dedicated to the process, would we?"
+    }
+  ];
+
+  const tiebreakerErrorMessages = [
+    {
+      title: "Hold on there, sports forecaster!",
+      text: "You've selected all your game winners, but you're missing the tiebreaker points! This final prediction is crucial for breaking ties and showing off your total points prediction skills. Please enter your best guess for the total points in the final game."
+    },
+    {
+      title: "Almost there, prediction master!",
+      text: "Your game picks look fantastic, but don't forget the tiebreaker! The total points prediction for the final game is what separates the good from the great. Take your best shot at predicting the combined score!"
+    },
+    {
+      title: "Tiebreaker alert!",
+      text: "You've conquered all the games, but the tiebreaker points field is still empty! This is your chance to showcase your football knowledge with a total points prediction. Don't leave it blank - make your mark!"
     }
   ];
 
@@ -174,7 +190,19 @@ const PicksManager = () => {
       return false;
     }
     
-    // Clear validation errors if all games are selected
+    // Check if tiebreaker points are filled
+    if (tiebreakerPoints === '' || tiebreakerPoints === null || tiebreakerPoints === undefined) {
+      setUnselectedGames([]);
+      
+      // Rotate tiebreaker error message
+      const currentMessage = tiebreakerErrorMessages[tiebreakerErrorIndex];
+      setValidationError(currentMessage);
+      setTiebreakerErrorIndex((prev) => (prev + 1) % tiebreakerErrorMessages.length);
+      
+      return false;
+    }
+    
+    // Clear validation errors if all games are selected and tiebreaker is filled
     setValidationError('');
     setUnselectedGames([]);
     return true;
@@ -367,9 +395,14 @@ const PicksManager = () => {
                     style={{ width: `${games.length > 0 ? (picks.length / games.length) * 100 : 0}%` }}
                   />
                 </div>
-                {picks.length === games.length && (
+                {picks.length === games.length && tiebreakerPoints !== '' && (
                   <div className="mt-2 text-green-600 font-medium text-sm">
-                    🎉 All picks complete!
+                    🎉 All picks and tiebreaker complete!
+                  </div>
+                )}
+                {picks.length === games.length && tiebreakerPoints === '' && (
+                  <div className="mt-2 text-orange-600 font-medium text-sm">
+                    🎯 Add tiebreaker to complete!
                   </div>
                 )}
               </div>
@@ -401,7 +434,7 @@ const PicksManager = () => {
                 <button
                   onClick={submitPicks}
                   disabled={submitting}
-                  className={`w-full px-4 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${submitting ? 'bg-gray-400 cursor-not-allowed' : picks.length === games.length ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl' : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'}`}
+                  className={`w-full px-4 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${submitting ? 'bg-gray-400 cursor-not-allowed' : picks.length === games.length && tiebreakerPoints !== '' ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl' : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'}`}
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center">
@@ -437,7 +470,7 @@ const PicksManager = () => {
                 
                 {picks.length > 0 && !validationError && (
                   <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 text-center">
-                    {picks.length} of {games.length} games selected
+                    {picks.length} of {games.length} games selected{tiebreakerPoints !== '' ? ', tiebreaker set' : ', tiebreaker needed'}
                   </p>
                 )}
               </div>
