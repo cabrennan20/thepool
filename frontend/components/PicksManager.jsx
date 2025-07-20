@@ -235,10 +235,122 @@ const PicksManager = () => {
         </div>
       )}
 
-      {/* Main Layout: Side Panel + Games */}
+      {/* Main Layout: Games + Side Panel */}
       <div className="flex flex-col lg:flex-row gap-8">
+        {/* Games List - ESPN Style with Date Headers */}
+        <div className="flex-1 order-2 lg:order-1">
+          {Object.entries(groupGamesByDate(games)).map(([dateKey, dateGames]) => {
+            const dateHeader = formatDateHeader(dateGames[0].game_date);
+            
+            return (
+              <div key={dateKey} className="mb-4">
+                {/* Date Header */}
+                <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide">
+                  {dateHeader}
+                </div>
+                
+                {/* Games for this date */}
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                  {dateGames.map((game, index) => {
+                    const currentPick = getPick(game.game_id);
+                    const gameDate = new Date(game.game_date);
+                    const now = new Date();
+                    const isGameStarted = gameDate <= now;
+
+                    const isUnselected = unselectedGames.includes(game.game_id);
+                    
+                    return (
+                      <div
+                        key={game.game_id}
+                        className={`flex items-center py-3 px-4 transition-all duration-200 ${
+                          index !== dateGames.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
+                        } ${currentPick ? 'bg-green-50 dark:bg-green-900/20' : ''} ${isGameStarted ? 'opacity-60' : ''} ${
+                          isUnselected ? 'bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 animate-pulse' : ''
+                        }`}
+                      >
+                        {/* Time */}
+                        <div className="w-16 text-xs text-gray-500 dark:text-gray-400">
+                          {formatTime(game.game_date)}
+                        </div>
+                        
+                        {/* Away Team */}
+                        <button
+                          onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
+                          disabled={isGameStarted}
+                          className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                            currentPick?.selected_team === game.away_team
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
+                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                          } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            {game.away_logo && (
+                              <img 
+                                src={game.away_logo} 
+                                alt={game.away_team}
+                                className="w-6 h-6 object-contain"
+                              />
+                            )}
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              <span className="hidden sm:inline">{game.away_team}</span>
+                              <span className="sm:hidden">{game.away_team.split(' ').pop()}</span>
+                            </span>
+                          </div>
+                          {currentPick?.selected_team === game.away_team && (
+                            <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
+                          )}
+                        </button>
+
+                        {/* VS/@ with Spread */}
+                        <div className="flex flex-col items-center px-3">
+                          <div className="text-gray-400 font-bold text-sm">
+                            {game.spread && game.spread > 0 ? '@' : 'vs'}
+                          </div>
+                          {game.spread && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {game.spread > 0 ? '+' : ''}{game.spread}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Home Team */}
+                        <button
+                          onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
+                          disabled={isGameStarted}
+                          className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                            currentPick?.selected_team === game.home_team
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
+                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                          } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            {game.home_logo && (
+                              <img 
+                                src={game.home_logo} 
+                                alt={game.home_team}
+                                className="w-6 h-6 object-contain"
+                              />
+                            )}
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              <span className="hidden sm:inline">{game.home_team}</span>
+                              <span className="sm:hidden">{game.home_team.split(' ').pop()}</span>
+                            </span>
+                          </div>
+                          {currentPick?.selected_team === game.home_team && (
+                            <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Side Panel with Progress */}
-        <div className="lg:w-80 flex-shrink-0">
+        <div className="lg:w-80 flex-shrink-0 order-1 lg:order-2">
           {games.length > 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm sticky top-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -269,7 +381,8 @@ const PicksManager = () => {
                     🎯 Tiebreaker
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Total points: {games[games.length - 1]?.away_team} @ {games[games.length - 1]?.home_team}
+                    <span className="hidden sm:inline">Total points: {games[games.length - 1]?.away_team} @ {games[games.length - 1]?.home_team}</span>
+                    <span className="sm:hidden">Total points: {games[games.length - 1]?.away_team.split(' ').pop()} @ {games[games.length - 1]?.home_team.split(' ').pop()}</span>
                   </p>
                   <input
                     type="number"
@@ -330,116 +443,6 @@ const PicksManager = () => {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Games List - ESPN Style with Date Headers */}
-        <div className="flex-1">
-          {Object.entries(groupGamesByDate(games)).map(([dateKey, dateGames]) => {
-            const dateHeader = formatDateHeader(dateGames[0].game_date);
-            
-            return (
-              <div key={dateKey} className="mb-4">
-                {/* Date Header */}
-                <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide">
-                  {dateHeader}
-                </div>
-                
-                {/* Games for this date */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                  {dateGames.map((game, index) => {
-                    const currentPick = getPick(game.game_id);
-                    const gameDate = new Date(game.game_date);
-                    const now = new Date();
-                    const isGameStarted = gameDate <= now;
-
-                    const isUnselected = unselectedGames.includes(game.game_id);
-                    
-                    return (
-                      <div
-                        key={game.game_id}
-                        className={`flex items-center py-3 px-4 transition-all duration-200 ${
-                          index !== dateGames.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''
-                        } ${currentPick ? 'bg-green-50 dark:bg-green-900/20' : ''} ${isGameStarted ? 'opacity-60' : ''} ${
-                          isUnselected ? 'bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 animate-pulse' : ''
-                        }`}
-                      >
-                        {/* Time */}
-                        <div className="w-16 text-xs text-gray-500 dark:text-gray-400">
-                          {formatTime(game.game_date)}
-                        </div>
-                        
-                        {/* Away Team */}
-                        <button
-                          onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
-                          disabled={isGameStarted}
-                          className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
-                            currentPick?.selected_team === game.away_team
-                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
-                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
-                          } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
-                        >
-                          <div className="flex items-center space-x-2">
-                            {game.away_logo && (
-                              <img 
-                                src={game.away_logo} 
-                                alt={game.away_team}
-                                className="w-6 h-6 object-contain"
-                              />
-                            )}
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              {game.away_team}
-                            </span>
-                          </div>
-                          {currentPick?.selected_team === game.away_team && (
-                            <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
-                          )}
-                        </button>
-
-                        {/* VS/@ with Spread */}
-                        <div className="flex flex-col items-center px-3">
-                          <div className="text-gray-400 font-bold text-sm">
-                            {game.spread && game.spread > 0 ? '@' : 'vs'}
-                          </div>
-                          {game.spread && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {game.spread > 0 ? '+' : ''}{game.spread}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Home Team */}
-                        <button
-                          onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
-                          disabled={isGameStarted}
-                          className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
-                            currentPick?.selected_team === game.home_team
-                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
-                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
-                          } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
-                        >
-                          <div className="flex items-center space-x-2">
-                            {game.home_logo && (
-                              <img 
-                                src={game.home_logo} 
-                                alt={game.home_team}
-                                className="w-6 h-6 object-contain"
-                              />
-                            )}
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              {game.home_team}
-                            </span>
-                          </div>
-                          {currentPick?.selected_team === game.home_team && (
-                            <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
-                          )}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
 
