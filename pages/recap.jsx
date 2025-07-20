@@ -205,17 +205,29 @@ const RecapPage = () => {
             
             {/* Controls */}
             <div className="flex flex-wrap gap-3 print:hidden">
-              <select
-                value={selectedWeek}
-                onChange={(e) => handleWeekChange(parseInt(e.target.value))}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                {availableWeeks.map(week => (
-                  <option key={week.week} value={week.week}>
-                    Week {week.week} {week.recap_available ? '' : '(Not Available)'}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedWeek}
+                  onChange={(e) => handleWeekChange(parseInt(e.target.value))}
+                  className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 pr-8 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                >
+                  {availableWeeks.filter(week => week.recap_available).map(week => (
+                    <option key={week.week} value={week.week}>
+                      Week {week.week}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg 
+                    className="w-4 h-4 text-gray-400" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
               
               <button
                 onClick={handlePrint}
