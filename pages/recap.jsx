@@ -111,6 +111,17 @@ const RecapPage = () => {
 
   const selectedWeekData = availableWeeks.find(w => w.week === selectedWeek);
 
+  // Helper function to extract team nickname from full team name
+  const getTeamNickname = (fullTeamName) => {
+    if (!fullTeamName) return fullTeamName;
+    
+    // Split by space and take the last word as nickname
+    // For teams like "New England Patriots" -> "Patriots"
+    // For teams like "Los Angeles Rams" -> "Rams"
+    const words = fullTeamName.trim().split(' ');
+    return words[words.length - 1];
+  };
+
   // Helper function to determine if a team is favored based on spread
   const isTeamFavored = (team, game) => {
     if (!game.spread) return null;
@@ -218,7 +229,7 @@ const RecapPage = () => {
                 <option value="">All Games</option>
                 {recapData.games.map(game => (
                   <option key={game.game_id} value={game.game_id}>
-                    {game.away_team} @ {game.home_team}
+                    {getTeamNickname(game.away_team)} @ {getTeamNickname(game.home_team)}
                   </option>
                 ))}
               </select>
@@ -269,11 +280,11 @@ const RecapPage = () => {
                   return (
                     <div key={game.game_id} className="border border-gray-200 rounded-lg p-3">
                       <div className="text-sm font-medium text-gray-900 mb-2">
-                        {game.away_team} @ {game.home_team}
+                        {getTeamNickname(game.away_team)} @ {getTeamNickname(game.home_team)}
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">{game.away_team}</span>
+                          <span className="text-sm text-gray-600">{getTeamNickname(game.away_team)}</span>
                           <div className="flex items-center space-x-2">
                             <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
                               {percentages.away_team_percentage}%
@@ -284,7 +295,7 @@ const RecapPage = () => {
                           </div>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">{game.home_team}</span>
+                          <span className="text-sm text-gray-600">{getTeamNickname(game.home_team)}</span>
                           <div className="flex items-center space-x-2">
                             <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
                               {percentages.home_team_percentage}%
@@ -415,9 +426,9 @@ const RecapPage = () => {
                         isMobile ? 'px-1 py-2 min-w-[80px]' : 'px-2 py-3 min-w-[100px]'
                       }`}>
                         <div className="space-y-1">
-                          <div>{game.away_team}</div>
+                          <div>{getTeamNickname(game.away_team)}</div>
                           <div className="text-gray-400">@</div>
-                          <div>{game.home_team}</div>
+                          <div>{getTeamNickname(game.home_team)}</div>
                           <div className="text-xs text-gray-400 font-normal">
                             {new Date(game.game_date).toLocaleDateString('en-US', { 
                               month: 'short', 
@@ -455,7 +466,7 @@ const RecapPage = () => {
                               <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                                 getTeamPickStyling(pick, game)
                               }`}>
-                                {pick}
+                                {getTeamNickname(pick)}
                               </span>
                             ) : (
                               <span className="text-gray-400 text-xs">No Pick</span>
@@ -501,9 +512,9 @@ const RecapPage = () => {
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                   <div className="flex items-center space-x-3">
                     <div className="text-center">
-                      <div className="font-medium text-sm">{game.away_team}</div>
+                      <div className="font-medium text-sm">{getTeamNickname(game.away_team)}</div>
                       <div className="text-xs text-gray-500">@</div>
-                      <div className="font-medium text-sm">{game.home_team}</div>
+                      <div className="font-medium text-sm">{getTeamNickname(game.home_team)}</div>
                       {renderPickPercentages(game.game_id)}
                     </div>
                   </div>
@@ -528,7 +539,7 @@ const RecapPage = () => {
                           <span className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${
                             getTeamPickStyling(pick, game)
                           }`}>
-                            {pick}
+                            {getTeamNickname(pick)}
                           </span>
                         ) : (
                           <span className="text-gray-400 text-xs">No Pick</span>
@@ -569,7 +580,7 @@ const RecapPage = () => {
                         <div key={game.game_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div className="flex-1">
                             <div className="font-medium text-sm text-gray-900">
-                              {game.away_team} @ {game.home_team}
+                              {getTeamNickname(game.away_team)} @ {getTeamNickname(game.home_team)}
                             </div>
                             <div className="text-xs text-gray-500">
                               {new Date(game.game_date).toLocaleDateString('en-US', { 
@@ -585,7 +596,7 @@ const RecapPage = () => {
                               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                                 getTeamPickStyling(pick, game)
                               }`}>
-                                {pick}
+                                {getTeamNickname(pick)}
                               </span>
                             ) : (
                               <span className="text-gray-400 text-sm">No Pick</span>
