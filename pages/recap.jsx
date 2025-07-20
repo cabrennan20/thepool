@@ -151,24 +151,6 @@ const RecapPage = () => {
     }
   };
 
-  // Helper function to render pick percentages
-  const renderPickPercentages = (gameId) => {
-    if (!recapData?.pick_percentages[gameId]) return null;
-    
-    const percentages = recapData.pick_percentages[gameId];
-    
-    return (
-      <div className="mt-1 text-[10px] space-y-0.5">
-        <div className="flex justify-between">
-          <span className="text-green-600 font-medium">{percentages.away_team_percentage}%</span>
-          <span className="text-blue-600 font-medium">{percentages.home_team_percentage}%</span>
-        </div>
-        {percentages.is_upset && (
-          <div className="text-orange-600 font-bold">UPSET!</div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -437,7 +419,6 @@ const RecapPage = () => {
                               minute: '2-digit'
                             })}
                           </div>
-                          {renderPickPercentages(game.game_id)}
                         </div>
                       </th>
                     ))}
@@ -515,7 +496,6 @@ const RecapPage = () => {
                       <div className="font-medium text-sm">{getTeamNickname(game.away_team)}</div>
                       <div className="text-xs text-gray-500">@</div>
                       <div className="font-medium text-sm">{getTeamNickname(game.home_team)}</div>
-                      {renderPickPercentages(game.game_id)}
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 text-right">
