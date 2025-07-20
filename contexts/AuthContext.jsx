@@ -14,8 +14,17 @@ export const AuthProvider = ({ children }) => {
       
       if (token && hasValidToken()) {
         try {
+          // Ensure the API client has the token before making the request
+          if (!api.getToken()) {
+            api.setToken(token);
+          }
           const currentUser = await api.getCurrentUser();
-          setUser(currentUser);
+          if (currentUser) {
+            setUser(currentUser);
+          } else {
+            // If we can't get user data, clear the invalid token
+            api.clearToken();
+          }
         } catch (error) {
           console.error('Failed to load user:', error);
           api.clearToken();
