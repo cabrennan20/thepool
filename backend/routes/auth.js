@@ -18,7 +18,7 @@ const registerSchema = z.object({
   last_name: z.string().min(1).max(50).optional(),
   alias: z.string().min(2).max(50).regex(/^[a-zA-Z0-9\s&'-]+$/, 'Alias can only contain letters, numbers, spaces, and common symbols'),
   phone: z.string().min(10).max(20).regex(/^[\d\s\-+().\s]+$/, 'Phone number can only contain digits, spaces, and common symbols'),
-  address: z.string().min(5).max(200)
+  venmo_paypal_handle: z.string().min(1).max(100).regex(/^@?[a-zA-Z0-9_-]+$/, 'Handle must be a valid username format')
 });
 
 // JWT secret
@@ -67,7 +67,7 @@ function requireAdmin(req, res, next) {
 router.post('/register', async (req, res) => {
   try {
     const validatedData = registerSchema.parse(req.body);
-    const { username, email, password, first_name, last_name, alias, phone, address } = validatedData;
+    const { username, email, password, first_name, last_name, alias, phone, venmo_paypal_handle } = validatedData;
 
     // Check if user already exists (username, email, or alias)
     const existingUser = await req.db.query(
@@ -87,10 +87,10 @@ router.post('/register', async (req, res) => {
 
     // Create user
     const result = await req.db.query(
-      `INSERT INTO users (username, email, password_hash, first_name, last_name, alias, phone, address) 
+      `INSERT INTO users (username, email, password_hash, first_name, last_name, alias, phone, venmo_paypal_handle) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
        RETURNING user_id, username, email, first_name, last_name, alias, is_admin, created_at`,
-      [username, email, password_hash, first_name, last_name, alias, phone, address]
+      [username, email, password_hash, first_name, last_name, alias, phone, venmo_paypal_handle]
     );
 
     const user = result.rows[0];
