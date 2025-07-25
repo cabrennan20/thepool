@@ -160,10 +160,7 @@ const LeaderboardPage = () => {
                         Player
                       </th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {activeTab === 'weekly' ? 'Correct' : 'Total Wins'}
-                      </th>
-                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {activeTab === 'weekly' ? 'Total Picks' : 'Total Games'}
+                        Record
                       </th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Win %
@@ -201,10 +198,7 @@ const LeaderboardPage = () => {
                             </div>
                           </td>
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {entry.correct_picks || 0}
-                          </td>
-                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {entry.total_picks || 0}
+                            {entry.correct_picks || 0}-{(entry.total_picks || 0) - (entry.correct_picks || 0)}
                           </td>
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {((entry.win_percentage || 0)).toFixed(1)}%
