@@ -137,9 +137,19 @@ This ensures all work is immediately saved and deployed to production.
 - Input validation with Zod schemas
 
 ### Data Privacy
+**CRITICAL RULE**: Real names (first_name, last_name) and contact information (email, phone) are NEVER displayed in public-facing features. This information is only accessible to admins in the database.
+
+**Player Display Guidelines**:
+- ALWAYS use `alias` for public player identification
+- NEVER display `first_name`, `last_name`, or `username` in public areas
+- Real names are only visible to admins in backend/admin interfaces
+- When implementing any player display feature, ALWAYS ask for clarification about which player data should be shown
+
+**Privacy Implementation**:
 - User contact information visible to admins only
-- Aliases used throughout public-facing features
+- Aliases used throughout ALL public-facing features (Leaderboard, Recap, etc.)
 - Pick visibility controlled by game start times
+- Player anonymity maintained for league privacy and security
 
 ### Performance Optimizations
 - Database indexes on frequently queried fields

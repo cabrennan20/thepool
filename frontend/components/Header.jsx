@@ -47,7 +47,7 @@ const Header = () => {
               ))}
             </nav>
             <div className="ml-4 flex items-center space-x-3">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Hi, {user.username}!</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Hi, {user.alias || user.username}!</span>
               <button
                 onClick={logout}
                 className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
@@ -96,7 +96,7 @@ const Header = () => {
             ))}
             <div className="border-t border-gray-200 pt-3 mt-3">
               <div className="px-3 py-2 text-sm text-gray-600">
-                Logged in as <span className="font-medium">{user.username}</span>
+                Logged in as <span className="font-medium">{user.alias || user.username}</span>
               </div>
               <button
                 onClick={() => {

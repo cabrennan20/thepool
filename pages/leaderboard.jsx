@@ -63,10 +63,8 @@ const LeaderboardPage = () => {
   }, [user, currentWeek, currentSeason]);
 
   const getUserDisplayName = (entry) => {
-    if (entry.first_name && entry.last_name) {
-      return `${entry.first_name} ${entry.last_name}`;
-    }
-    return entry.username;
+    // ALWAYS use alias for public player identification (privacy rule)
+    return entry.alias || entry.username;
   };
 
   const getRankBadgeColor = (rank) => {
@@ -200,9 +198,6 @@ const LeaderboardPage = () => {
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
                               {getUserDisplayName(entry)}
-                            </div>
-                            <div className="text-xs sm:text-sm text-gray-500">
-                              @{entry.username}
                             </div>
                           </td>
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
