@@ -364,7 +364,8 @@ class ApiClient {
       params.append('week', week.toString());
       if (season) params.append('season', season.toString());
       
-      return await this.request<WeeklyScore[]>(`/scores/weekly?${params.toString()}`);
+      const data = await this.request<any>(`/scores/weekly?${params.toString()}`);
+      return data.leaderboard || data;
     } catch (error) {
       console.warn('Backend not available, using mock weekly scores data');
       return mockWeeklyScores;
@@ -376,10 +377,26 @@ class ApiClient {
       const params = new URLSearchParams();
       if (season) params.append('season', season.toString());
       
-      return await this.request<WeeklyScore[]>(`/scores/season?${params.toString()}`);
+      const data = await this.request<any>(`/scores/season?${params.toString()}`);
+      return data.standings || data;
     } catch (error) {
       console.warn('Backend not available, using mock season standings data');
-      return mockWeeklyScores;
+      // Generate mock season standings from the same user data as recap
+      const { mockRecapData } = await import('./mockData');
+      return mockRecapData.map((user: any, index: number) => ({
+        user_id: user.user_id,
+        username: user.username,
+        alias: user.alias,
+        first_name: null,
+        last_name: null,
+        weeks_played: 1,
+        correct_picks: Object.values(user.picks).length - Math.floor(Math.random() * 3), // Random correct picks
+        total_picks: Object.values(user.picks).length,
+        win_percentage: Math.round((Object.values(user.picks).length - Math.floor(Math.random() * 3)) / Object.values(user.picks).length * 100),
+        season_rank: index + 1,
+        weekly_rank: index + 1,
+        week: 1
+      })).sort((a: any, b: any) => b.correct_picks - a.correct_picks);
     }
   }
 
