@@ -85,10 +85,17 @@ const LeaderboardPage = () => {
     return entry.alias || entry.username;
   };
 
-  const getRankBadgeColor = (rank) => {
-    if (rank === 1) return 'bg-yellow-500 text-white';
-    if (rank === 2) return 'bg-gray-400 text-white';
-    if (rank === 3) return 'bg-orange-600 text-white';
+  const getRankBadgeColor = (rank, isWeekly = false) => {
+    if (rank === 1) return 'bg-yellow-500 text-white'; // Gold
+    if (rank === 2) return 'bg-gray-400 text-white'; // Silver
+    if (isWeekly) {
+      // Weekly: only 1st and 2nd place highlighted
+      return 'bg-gray-200 text-gray-700';
+    }
+    // Season: 1st through 5th place highlighted
+    if (rank === 3) return 'bg-orange-600 text-white'; // Bronze
+    if (rank === 4) return 'bg-blue-500 text-white'; // 4th place
+    if (rank === 5) return 'bg-green-500 text-white'; // 5th place
     return 'bg-gray-200 text-gray-700';
   };
 
@@ -202,7 +209,7 @@ const LeaderboardPage = () => {
                         >
                           <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <span className={`inline-flex items-center justify-center h-6 w-6 sm:h-8 sm:w-8 rounded-full text-xs sm:text-sm font-medium ${getRankBadgeColor(rank)}`}>
+                              <span className={`inline-flex items-center justify-center h-6 w-6 sm:h-8 sm:w-8 rounded-full text-xs sm:text-sm font-medium ${getRankBadgeColor(rank, activeTab === 'weekly')}`}>
                                 {rank}
                               </span>
                               {isCurrentUser && (
