@@ -11,13 +11,8 @@ const LoginForm = () => {
   const [lastName, setLastName] = useState('');
   const [alias, setAlias] = useState('');
   const [phone, setPhone] = useState('');
-<<<<<<< HEAD:frontend/components/LoginForm.jsx
-  const [address, setAddress] = useState('');
-  const [registerError, setRegisterError] = useState(null);
-=======
   const [venmoPaypalHandle, setVenmoPaypalHandle] = useState('');
-  const [registerError, setRegisterError] = useState<string | null>(null);
->>>>>>> 99b53e3 (🔄 Update registration: Remove address field, add Venmo/PayPal handle):frontend/components/LoginForm.tsx
+  const [registerError, setRegisterError] = useState(null);
   const [registerLoading, setRegisterLoading] = useState(false);
   const { login, isLoading, error } = useAuth();
 

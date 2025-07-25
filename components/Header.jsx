@@ -17,6 +17,7 @@ const Header = () => {
 
   const navItems = [
     { href: '/', label: 'Home', icon: '🏠' },
+    { href: '/live-tracker', label: 'Live Tracker', icon: '📊' },
     { href: '/recap', label: 'Recap', icon: '📋' },
     { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
     ...(user.is_admin ? [{ href: '/admin', label: 'Admin', icon: '⚙️' }] : [])

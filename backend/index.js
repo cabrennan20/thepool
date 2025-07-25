@@ -60,6 +60,7 @@ const adminMessageRoutes = require('./routes/admin-messages');
 const systemRoutes = require('./routes/system');
 const recapRoutes = require('./routes/recap');
 const notificationRoutes = require('./routes/notifications');
+const trackerRoutes = require('./routes/tracker');
 
 // Add database pool to request object
 app.use((req, res, next) => {
@@ -77,6 +78,7 @@ app.use('/api/admin-messages', adminMessageRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/recap', recapRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/tracker', trackerRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
