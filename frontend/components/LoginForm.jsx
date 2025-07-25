@@ -11,8 +11,13 @@ const LoginForm = () => {
   const [lastName, setLastName] = useState('');
   const [alias, setAlias] = useState('');
   const [phone, setPhone] = useState('');
+<<<<<<< HEAD:frontend/components/LoginForm.jsx
   const [address, setAddress] = useState('');
   const [registerError, setRegisterError] = useState(null);
+=======
+  const [venmoPaypalHandle, setVenmoPaypalHandle] = useState('');
+  const [registerError, setRegisterError] = useState<string | null>(null);
+>>>>>>> 99b53e3 (🔄 Update registration: Remove address field, add Venmo/PayPal handle):frontend/components/LoginForm.tsx
   const [registerLoading, setRegisterLoading] = useState(false);
   const { login, isLoading, error } = useAuth();
 
@@ -38,7 +43,7 @@ const LoginForm = () => {
         last_name: lastName,
         alias,
         phone,
-        address
+        venmo_paypal_handle: venmoPaypalHandle
       });
       
       // Auto-login after successful registration
@@ -136,12 +141,12 @@ const LoginForm = () => {
                     type="text"
                     required
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Venmo/PayPal Handle (e.g., @username)"
+                    value={venmoPaypalHandle}
+                    onChange={(e) => setVenmoPaypalHandle(e.target.value)}
                   />
                   <p className="text-xs text-gray-500 mt-1 px-1">
-                    For admin contact purposes only - not visible to other members
+                    Your Venmo or PayPal username for league payments
                   </p>
                 </div>
               </>
