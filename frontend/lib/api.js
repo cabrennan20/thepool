@@ -170,6 +170,59 @@ class ApiClient {
     }
   }
 
+  // Recap
+  async getRecapWeeks(season = new Date().getFullYear()) {
+    try {
+      return await this.request(`/recap/weeks/${season}`);
+    } catch (error) {
+      console.warn('Backend not available, using mock recap weeks data');
+      return mockAvailableWeeks;
+    }
+  }
+
+  async getRecapData(week, season = new Date().getFullYear()) {
+    try {
+      return await this.request(`/recap/week/${week}?season=${season}`);
+    } catch (error) {
+      console.warn('Backend not available, using mock recap data');
+      return mockRecapResponse;
+    }
+  }
+
+  // Scores
+  async getWeeklyScores(week, season = new Date().getFullYear()) {
+    try {
+      const data = await this.request(`/scores/weekly?week=${week}&season=${season}`);
+      return data.leaderboard || data;
+    } catch (error) {
+      console.warn('Backend not available, using mock scores data');
+      return mockWeeklyScores;
+    }
+  }
+
+  async getSeasonStandings(season = new Date().getFullYear()) {
+    try {
+      const data = await this.request(`/scores/season?season=${season}`);
+      return data.standings || data;
+    } catch (error) {
+      console.warn('Backend not available, using mock season standings');
+      // Generate mock season standings from the same user data as recap
+      const { mockRecapData } = await import('./mockData');
+      return mockRecapData.map((user, index) => ({
+        user_id: user.user_id,
+        username: user.username,
+        alias: user.alias,
+        first_name: null,
+        last_name: null,
+        weeks_played: 1,
+        correct_picks: Object.values(user.picks).length - Math.floor(Math.random() * 3), // Random correct picks
+        total_picks: Object.values(user.picks).length,
+        win_percentage: Math.round((Object.values(user.picks).length - Math.floor(Math.random() * 3)) / Object.values(user.picks).length * 100),
+        season_rank: index + 1
+      })).sort((a, b) => b.correct_picks - a.correct_picks);
+    }
+  }
+
   // Helper method for mock data
   generateMockToken(user) {
     const header = { alg: 'none', typ: 'JWT' };
