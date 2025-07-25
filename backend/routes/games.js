@@ -1,5 +1,6 @@
 const express = require('express');
 const { authenticateToken } = require('./auth');
+const espnService = require('../services/espnService');
 const router = express.Router();
 
 // GET /api/games - Get games with optional filtering
@@ -54,12 +55,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/games/current-week - Get current week's games
+// GET /api/games/current-week - Get current week's games with live data
 router.get('/current-week', async (req, res) => {
   try {
     // Get current week from system settings
     const settingsResult = await req.db.query(
-      `SELECT setting_value FROM system_settings 
+      `SELECT setting_key, setting_value FROM system_settings 
        WHERE setting_key IN ('current_week', 'current_season')`
     );
 
@@ -70,8 +71,32 @@ router.get('/current-week', async (req, res) => {
     });
 
     const currentWeek = settings.week || 1;
-    const currentSeason = settings.season || new Date().getFullYear();
+    const currentSeason = settings.season || 2025;
 
+    try {
+      // Try to get live data from ESPN API first
+      const liveGames = await espnService.getWeekGames(currentWeek, currentSeason);
+      
+      if (liveGames && liveGames.length > 0) {
+        // Return live ESPN data with additional metadata
+        res.json({
+          week: currentWeek,
+          season: currentSeason,
+          games: liveGames.map(game => ({
+            ...game,
+            // Map ESPN data to our expected format
+            game_id: game.espn_id,
+            odds_api_id: game.espn_id
+          })),
+          source: 'espn_live'
+        });
+        return;
+      }
+    } catch (espnError) {
+      console.error('ESPN API failed, falling back to database:', espnError.message);
+    }
+
+    // Fallback to database if ESPN API fails
     const result = await req.db.query(
       `SELECT 
         game_id,
@@ -94,7 +119,8 @@ router.get('/current-week', async (req, res) => {
     res.json({
       week: currentWeek,
       season: currentSeason,
-      games: result.rows
+      games: result.rows,
+      source: 'database_fallback'
     });
 
   } catch (error) {
@@ -268,6 +294,46 @@ router.get('/week/:week/stats', async (req, res) => {
   } catch (error) {
     console.error('Get week stats error:', error);
     res.status(500).json({ error: 'Failed to get week statistics' });
+  }
+});
+
+// GET /api/games/live-scores - Get live ESPN scores
+router.get('/live-scores', async (req, res) => {
+  try {
+    const week = parseInt(req.query.week) || 1;
+    const season = parseInt(req.query.season) || 2025;
+
+    // Get live scores from ESPN
+    const liveScores = await espnService.getWeekGames(week, season);
+    
+    res.json({
+      week,
+      season,
+      games: liveScores,
+      source: 'espn_api',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Get live scores error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get live scores from ESPN',
+      details: error.message 
+    });
+  }
+});
+
+// GET /api/games/espn/health - Check ESPN API health
+router.get('/espn/health', async (req, res) => {
+  try {
+    const health = await espnService.healthCheck();
+    res.json(health);
+  } catch (error) {
+    console.error('ESPN health check error:', error);
+    res.status(500).json({ 
+      available: false,
+      message: error.message 
+    });
   }
 });
 

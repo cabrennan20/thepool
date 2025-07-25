@@ -185,17 +185,28 @@ const LiveTrackerPage = () => {
     setWorksheetScores(updatedScores);
   };
 
-  const formatGameTime = (gameDate, gameStatus) => {
+  const formatGameTime = (gameDate, gameStatus, statusDetail, clock) => {
     if (gameStatus === 'final') return 'Final';
-    if (gameStatus === 'in_progress') return 'Live';
+    if (gameStatus === 'in_progress') {
+      return clock ? `${clock}` : 'Live';
+    }
     
     const date = new Date(gameDate);
-    return date.toLocaleTimeString('en-US', { 
-      weekday: 'short',
+    const now = new Date();
+    const gameDay = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const gameTime = date.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       timeZoneName: 'short'
     });
+    
+    // If it's the same day, just show the time
+    if (date.toDateString() === now.toDateString()) {
+      return gameTime;
+    }
+    
+    // Otherwise show day and time
+    return `${gameDay} ${gameTime}`;
   };
 
   if (isLoading) {
@@ -228,7 +239,7 @@ const LiveTrackerPage = () => {
               </p>
               {firstGame && (
                 <p className="text-sm text-yellow-600 mt-2">
-                  First game: {firstGame.away_team} @ {firstGame.home_team} on {formatGameTime(firstGame.game_date, firstGame.game_status)}
+                  First game: {firstGame.away_team} @ {firstGame.home_team} on {formatGameTime(firstGame.game_date, firstGame.game_status, firstGame.game_status_detail, firstGame.clock)}
                 </p>
               )}
             </div>
@@ -268,236 +279,263 @@ const LiveTrackerPage = () => {
           </div>
         )}
 
-        {/* Live Scores Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Live Scores - Week {currentWeek}</h2>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-              {games.map(game => (
-                <div key={game.game_id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="text-sm font-medium text-gray-600">
-                      {formatGameTime(game.game_date, game.game_status)}
-                    </div>
-                    <div className={`text-xs px-2 py-1 rounded-full ${
-                      game.game_status === 'final' ? 'bg-gray-100 text-gray-800' :
-                      game.game_status === 'in_progress' ? 'bg-green-100 text-green-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {game.game_status === 'final' ? 'Final' :
-                       game.game_status === 'in_progress' ? 'Live' : 'Scheduled'}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{game.away_team}</span>
-                      <span className="text-lg font-bold">{game.away_score || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{game.home_team}</span>
-                      <span className="text-lg font-bold">{game.home_score || 0}</span>
-                    </div>
-                  </div>
-                  
-                  {game.spread && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      Spread: {game.home_team} {game.spread > 0 ? '+' : ''}{game.spread}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Score Worksheet Section */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Score Worksheet</h2>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={handleWinOut}
-                className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Win Out
-              </button>
-              <button
-                onClick={handleLoseOut}
-                className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Lose Out
-              </button>
-              <button
-                onClick={calculateForecast}
-                disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {loading ? 'Calculating...' : 'Run Tracker'}
-              </button>
-            </div>
-          </div>
+        {/* Two-Panel Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Game
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Away Score
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Home Score
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {games.map(game => {
-                    const gameScore = worksheetScores[game.game_id];
-                    if (!gameScore) return null;
-                    
-                    return (
-                      <tr key={game.game_id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {game.away_team} @ {game.home_team}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {formatGameTime(game.game_date, game.game_status)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {gameScore.editable ? (
-                            <input
-                              type="number"
-                              min="0"
-                              max="99"
-                              value={gameScore.away_score}
-                              onChange={(e) => handleScoreChange(game.game_id, 'away', e.target.value)}
-                              className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
-                            />
-                          ) : (
-                            <span className="text-lg font-bold">{gameScore.away_score}</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {gameScore.editable ? (
-                            <input
-                              type="number"
-                              min="0"
-                              max="99"
-                              value={gameScore.home_score}
-                              onChange={(e) => handleScoreChange(game.game_id, 'home', e.target.value)}
-                              className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
-                            />
-                          ) : (
-                            <span className="text-lg font-bold">{gameScore.home_score}</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            gameScore.editable 
-                              ? 'bg-blue-100 text-blue-800' 
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {gameScore.editable ? 'Editable' : 'Final'}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Forecast Results Section */}
-        {forecastResults.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Forecasted Results</h2>
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Player
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Weekly Record
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Weekly Rank
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Yearly Rank
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Change
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {forecastResults.map((result) => {
-                      const isCurrentUser = result.user_id === user.user_id;
-                      
-                      return (
-                        <tr 
-                          key={result.user_id}
-                          className={isCurrentUser ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-gray-50'}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {result.alias}
-                              {isCurrentUser && (
-                                <span className="ml-2 text-xs text-indigo-600 font-medium">(You)</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {result.weekly_record}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">
-                              {result.weekly_rank}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
-                              {result.yearly_rank}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {result.yearly_rank_change !== 0 && (
-                              <div className="flex items-center">
-                                {result.yearly_rank_change > 0 ? (
-                                  <span className="text-green-600 flex items-center">
-                                    ↑ {result.yearly_rank_change}
-                                  </span>
-                                ) : (
-                                  <span className="text-red-600 flex items-center">
-                                    ↓ {Math.abs(result.yearly_rank_change)}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </td>
+          {/* Left Panel - Score Worksheet and Forecast */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* Score Worksheet Section */}
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Score Worksheet</h2>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={handleWinOut}
+                    className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Win Out
+                  </button>
+                  <button
+                    onClick={handleLoseOut}
+                    className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Lose Out
+                  </button>
+                  <button
+                    onClick={calculateForecast}
+                    disabled={loading}
+                    className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? 'Calculating...' : 'Run Tracker'}
+                  </button>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Game
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Away Score
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Home Score
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {games.map(game => {
+                          const gameScore = worksheetScores[game.game_id];
+                          if (!gameScore) return null;
+                          
+                          return (
+                            <tr key={game.game_id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {game.away_team} @ {game.home_team}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {formatGameTime(game.game_date, game.game_status, game.game_status_detail, game.clock)}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {gameScore.editable ? (
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="99"
+                                    value={gameScore.away_score}
+                                    onChange={(e) => handleScoreChange(game.game_id, 'away', e.target.value)}
+                                    className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                                  />
+                                ) : (
+                                  <span className="text-lg font-bold">{gameScore.away_score}</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {gameScore.editable ? (
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="99"
+                                    value={gameScore.home_score}
+                                    onChange={(e) => handleScoreChange(game.game_id, 'home', e.target.value)}
+                                    className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                                  />
+                                ) : (
+                                  <span className="text-lg font-bold">{gameScore.home_score}</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  gameScore.editable 
+                                    ? 'bg-blue-100 text-blue-800' 
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {gameScore.editable ? 'Editable' : 'Final'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* Forecast Results Section */}
+              {forecastResults.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Forecasted Results</h2>
+                  <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Player
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Weekly Record
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Weekly Rank
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Yearly Rank
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Change
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {forecastResults.map((result) => {
+                            const isCurrentUser = result.user_id === user.user_id;
+                            
+                            return (
+                              <tr 
+                                key={result.user_id}
+                                className={isCurrentUser ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-gray-50'}
+                              >
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {result.alias}
+                                    {isCurrentUser && (
+                                      <span className="ml-2 text-xs text-indigo-600 font-medium">(You)</span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {result.weekly_record}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">
+                                    {result.weekly_rank}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
+                                    {result.yearly_rank}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  {result.yearly_rank_change !== 0 && (
+                                    <div className="flex items-center">
+                                      {result.yearly_rank_change > 0 ? (
+                                        <span className="text-green-600 flex items-center">
+                                          ↑ {result.yearly_rank_change}
+                                        </span>
+                                      ) : (
+                                        <span className="text-red-600 flex items-center">
+                                          ↓ {Math.abs(result.yearly_rank_change)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+          {/* Right Panel - Live Scores */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-4">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Live Scores - Week {currentWeek}</h2>
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="space-y-3 p-4">
+                  {games.map(game => (
+                    <div key={game.game_id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="text-sm font-medium text-gray-600">
+                          {formatGameTime(game.game_date, game.game_status, game.game_status_detail, game.clock)}
+                        </div>
+                        <div className={`text-xs px-2 py-1 rounded-full ${
+                          game.game_status === 'final' ? 'bg-gray-100 text-gray-800' :
+                          game.game_status === 'in_progress' ? 'bg-green-100 text-green-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {game.game_status === 'final' ? 'Final' :
+                           game.game_status === 'in_progress' ? 'Live' : 'Scheduled'}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-2">
+                            {game.away_team_logo && (
+                              <img src={game.away_team_logo} alt={game.away_team_abbr} className="w-4 h-4" />
+                            )}
+                            <span className="font-medium text-sm">{game.away_team_abbr || game.away_team}</span>
+                          </div>
+                          <span className="text-lg font-bold">{game.away_score || 0}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-2">
+                            {game.home_team_logo && (
+                              <img src={game.home_team_logo} alt={game.home_team_abbr} className="w-4 h-4" />
+                            )}
+                            <span className="font-medium text-sm">{game.home_team_abbr || game.home_team}</span>
+                          </div>
+                          <span className="text-lg font-bold">{game.home_score || 0}</span>
+                        </div>
+                      </div>
+                      
+                      {game.spread && (
+                        <div className="mt-2 text-xs text-gray-500">
+                          Spread: {game.home_team_abbr || game.home_team} {game.spread > 0 ? '+' : ''}{game.spread}
+                        </div>
+                      )}
+                      
+                      {game.venue && (
+                        <div className="mt-1 text-xs text-gray-400">
+                          {game.venue}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        )}
+
+        </div>
       </div>
     </div>
   );

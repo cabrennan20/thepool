@@ -14,6 +14,7 @@ import {
 class ApiClient {
   constructor() {
     this.token = null;
+    // Initialize token from localStorage on client-side
     if (typeof window !== 'undefined') {
       this.token = localStorage.getItem('auth_token');
     }
@@ -110,15 +111,38 @@ class ApiClient {
     try {
       return await this.request('/auth/me');
     } catch (error) {
-      console.warn('Backend not available, using mock user from token');
-      if (this.token && this.token.includes('.mock_signature')) {
+      console.warn('Backend not available, checking token locally');
+      
+      // If we have a token, try to decode it locally
+      if (this.token) {
         try {
           const payloadPart = this.token.split('.')[1];
           const payload = JSON.parse(atob(payloadPart));
-          const mockUser = mockUsers.find(user => user.user_id === payload.userId);
-          return mockUser;
+          
+          // Check if token is expired
+          const now = Math.floor(Date.now() / 1000);
+          if (payload.exp && payload.exp < now) {
+            console.warn('Token is expired');
+            this.clearToken();
+            return null;
+          }
+          
+          // For mock tokens, use mock user data
+          if (this.token.includes('.mock_signature')) {
+            const mockUser = mockUsers.find(user => user.user_id === payload.userId);
+            return mockUser;
+          }
+          
+          // For production tokens, create a minimal user object from token payload
+          return {
+            user_id: payload.userId,
+            username: payload.username,
+            is_admin: payload.isAdmin || false,
+            alias: payload.username // Fallback alias
+          };
         } catch (e) {
-          console.error('Failed to decode mock token:', e);
+          console.error('Failed to decode token:', e);
+          this.clearToken();
         }
       }
       return null;
@@ -129,11 +153,38 @@ class ApiClient {
   async getCurrentWeekGames() {
     try {
       const data = await this.request('/games/current-week');
-      return data.games;
+      return data.games || [];
     } catch (error) {
       console.warn('Backend not available, using mock games data');
       const { mockGames } = await import('./mockData');
       return mockGames;
+    }
+  }
+
+  // Get live scores from ESPN API
+  async getLiveScores(week = 1, season = 2025) {
+    try {
+      const params = new URLSearchParams();
+      params.append('week', week.toString());
+      params.append('season', season.toString());
+      
+      const data = await this.request(`/games/live-scores?${params.toString()}`);
+      return data.games || [];
+    } catch (error) {
+      console.warn('ESPN API not available, using current week games');
+      return await this.getCurrentWeekGames();
+    }
+  }
+
+  // Check ESPN API health
+  async checkESPNHealth() {
+    try {
+      return await this.request('/games/espn/health');
+    } catch (error) {
+      return {
+        available: false,
+        message: error.message
+      };
     }
   }
 
@@ -297,7 +348,7 @@ class ApiClient {
       userId: user.user_id,
       username: user.username,
       isAdmin: user.is_admin,
-      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60)
+      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours to match backend production
     };
     
     const encodedHeader = btoa(JSON.stringify(header));
