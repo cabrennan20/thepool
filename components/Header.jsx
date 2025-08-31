@@ -20,6 +20,7 @@ const Header = () => {
     { href: '/live-tracker', label: 'Live Tracker', icon: '📊' },
     { href: '/recap', label: 'Recap', icon: '📋' },
     { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
+    { href: '/rules', label: 'Rules', icon: '📖' },
     ...(user.is_admin ? [{ href: '/admin', label: 'Admin', icon: '⚙️' }] : [])
   ];
 
