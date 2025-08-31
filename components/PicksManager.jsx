@@ -254,9 +254,9 @@ const PicksManager = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
           <img 
-            src="https://logos-world.net/wp-content/uploads/2020/06/NFL-Logo.png" 
+            src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" 
             alt="NFL Logo" 
-            className="w-10 h-6 object-contain"
+            className="w-8 h-8 object-contain"
           />
           Week {currentWeek} Picks
         </h1>
