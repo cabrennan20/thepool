@@ -241,6 +241,88 @@ Get ready for next week's games!
     }
   }
 
+  async sendPasswordReset(user, resetToken) {
+    if (!this.transporter) {
+      console.log('Email service not available');
+      return { success: false, error: 'Email service not configured' };
+    }
+
+    try {
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+      const subject = `🔐 Reset Your Password - The Pool`;
+      
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1f2937;">🔐 THE POOL - Password Reset</h2>
+          
+          <p>Hi <strong>${user.alias}</strong>,</p>
+          
+          <p>We received a request to reset your password for your Pool account.</p>
+          
+          <div style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px; margin: 20px 0;">
+            <h3 style="margin: 0 0 10px 0; color: #0c4a6e;">🔑 Reset Your Password</h3>
+            <p style="margin: 0 0 15px 0; color: #0c4a6e;">Click the button below to reset your password. This link will expire in 1 hour.</p>
+            <div style="text-align: center;">
+              <a href="${resetUrl}" 
+                 style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                Reset Password
+              </a>
+            </div>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px;">
+            If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.
+          </p>
+          
+          <p style="color: #6b7280; font-size: 14px;">
+            If the button doesn't work, copy and paste this link into your browser:<br>
+            <a href="${resetUrl}" style="color: #4f46e5; word-break: break-all;">${resetUrl}</a>
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+          <p style="color: #9ca3af; font-size: 12px;">
+            - The Pool Management Team
+          </p>
+        </div>
+      `;
+
+      const textContent = `
+THE POOL - Password Reset
+
+Hi ${user.alias},
+
+We received a request to reset your password for your Pool account.
+
+🔑 RESET YOUR PASSWORD:
+Click this link to reset your password (expires in 1 hour):
+${resetUrl}
+
+If you didn't request this password reset, you can safely ignore this email.
+
+- The Pool Management Team
+      `;
+
+      const mailOptions = {
+        from: {
+          name: 'The Pool - NFL Picks',
+          address: process.env.EMAIL_USER
+        },
+        to: user.email,
+        subject: subject,
+        text: textContent,
+        html: htmlContent,
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      console.log(`📧 Password reset sent to ${user.email} (${user.alias})`);
+      
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error(`❌ Failed to send password reset to ${user.email}:`, error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
   async testEmailConfiguration() {
     if (!this.transporter) {
       return { success: false, error: 'Email service not configured' };
