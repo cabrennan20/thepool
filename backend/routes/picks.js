@@ -330,4 +330,38 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
   }
 });
 
+// TEMPORARY DEBUG ENDPOINT - Remove after testing
+router.post('/debug/test-submission', async (req, res) => {
+  try {
+    // Test submission without auth to see validation errors
+    const testPicks = [
+      {
+        game_id: 278,
+        selected_team: "PHI",
+        tiebreaker_points: 45
+      }
+    ];
+    
+    console.log('DEBUG - Testing pick submission validation:', testPicks);
+    
+    // Test the validation schema
+    const validatedData = picksSubmissionSchema.parse({ picks: testPicks });
+    
+    res.json({
+      debug: true,
+      message: 'Validation passed',
+      validatedData,
+      testPicks
+    });
+    
+  } catch (error) {
+    console.log('DEBUG - Validation error:', error);
+    res.status(400).json({ 
+      debug: true,
+      error: error.message,
+      details: error.errors || error
+    });
+  }
+});
+
 module.exports = router;
