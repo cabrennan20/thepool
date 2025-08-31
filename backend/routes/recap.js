@@ -94,6 +94,14 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
     // Group picks by user
     const userPicksMap = new Map();
     
+    // DEBUG: Log picks data for troubleshooting
+    console.log('DEBUG - Recap picks query result:', {
+      totalRows: picksResult.rows.length,
+      sampleRows: picksResult.rows.slice(0, 3),
+      week,
+      season
+    });
+    
     picksResult.rows.forEach(row => {
       const userId = row.user_id;
       
@@ -189,6 +197,14 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
 
     // Sort by alias alphabetically
     recapData.sort((a, b) => a.alias.localeCompare(b.alias));
+
+    // DEBUG: Log final recap data structure
+    console.log('DEBUG - Final recap response:', {
+      totalUsers: recapData.length,
+      totalGames: games.length,
+      sampleUser: recapData[0],
+      pickPercentagesKeys: Object.keys(pickPercentages)
+    });
 
     res.json({
       week,
