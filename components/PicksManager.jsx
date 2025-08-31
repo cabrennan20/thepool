@@ -297,7 +297,7 @@ const PicksManager = () => {
                         }`}
                       >
                         {/* Time */}
-                        <div className="w-16 text-xs text-gray-500 dark:text-gray-400">
+                        <div className="w-20 text-sm font-medium text-gray-700 dark:text-gray-300">
                           {formatTime(game.game_date)}
                         </div>
                         
@@ -319,7 +319,7 @@ const PicksManager = () => {
                               <button
                                 onClick={() => !isGameStarted && updatePick(game.game_id, favoriteTeam)}
                                 disabled={isGameStarted}
-                                className={`flex-1 flex items-center justify-between py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                                className={`flex-[0.75] flex items-center justify-between py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
                                   currentPick?.selected_team === favoriteTeam
                                     ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
                                     : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
@@ -351,8 +351,8 @@ const PicksManager = () => {
                               </button>
 
                               {/* VS/@ */}
-                              <div className="flex items-center px-3">
-                                <div className="text-gray-400 font-bold text-sm">
+                              <div className="flex items-center px-4">
+                                <div className="text-gray-600 dark:text-gray-400 font-bold text-lg">
                                   {vsSymbol}
                                 </div>
                               </div>
@@ -361,7 +361,7 @@ const PicksManager = () => {
                               <button
                                 onClick={() => !isGameStarted && updatePick(game.game_id, underdogTeam)}
                                 disabled={isGameStarted}
-                                className={`flex-1 flex items-center justify-between py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                                className={`flex-[0.75] flex items-center justify-between py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
                                   currentPick?.selected_team === underdogTeam
                                     ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
                                     : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
