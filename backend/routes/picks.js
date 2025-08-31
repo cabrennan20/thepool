@@ -181,6 +181,16 @@ router.post('/', authenticateToken, async (req, res) => {
   } catch (error) {
     await client.query('ROLLBACK');
     
+    // DEBUG: Log detailed error information
+    console.error('DEBUG - Pick submission error:', {
+      errorType: error.constructor.name,
+      errorMessage: error.message,
+      userId: req.user?.userId,
+      username: req.user?.username,
+      isZodError: error instanceof z.ZodError,
+      zodErrors: error instanceof z.ZodError ? error.errors : null
+    });
+    
     if (error instanceof z.ZodError) {
       return res.status(400).json({ 
         error: 'Validation failed', 
