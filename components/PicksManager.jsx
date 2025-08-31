@@ -418,8 +418,8 @@ const PicksManager = () => {
               </h3>
               <div className="mb-2 lg:mb-4">
                 <div className="flex items-center justify-between text-xs lg:text-sm text-gray-600 dark:text-gray-400 mb-1 lg:mb-2">
-                  <span>Games Picked</span>
-                  <span>{picks.length}/{games.length}</span>
+                  <span className="font-bold lg:font-normal">Games Picked</span>
+                  <span className="font-bold lg:font-normal">{picks.length}/{games.length}</span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 lg:h-3">
                   <div 
@@ -441,13 +441,13 @@ const PicksManager = () => {
               
               {/* Tiebreaker in Side Panel */}
               {games.length > 0 && (
-                <div className="border-t lg:border-t-0 pt-2 lg:pt-4">
+                <div className="pt-2 lg:pt-4 lg:border-t">
                   <h4 className="hidden lg:block text-md font-semibold text-gray-900 dark:text-white mb-2">
                     🎯 Tiebreaker
                   </h4>
                   <div className="flex items-center space-x-2 lg:block">
                     <div className="flex-1">
-                      <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 lg:mb-3 whitespace-nowrap block lg:inline">
+                      <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 lg:mb-3 whitespace-nowrap block lg:inline font-bold lg:font-normal">
                         {games.length > 0 && (() => {
                           const finalGame = games[games.length - 1];
                           const isHomeFavored = finalGame.spread < 0;
@@ -455,10 +455,13 @@ const PicksManager = () => {
                           const underdogTeam = isHomeFavored ? finalGame.away_team : finalGame.home_team;
                           const vsSymbol = isHomeFavored ? 'vs' : '@';
                           return (
-                            <span className="lg:hidden">{favoriteTeam} {vsSymbol} {underdogTeam} - </span>
+                            <>
+                              <span className="lg:hidden">{favoriteTeam} {vsSymbol} {underdogTeam} - </span>
+                              <span className="hidden lg:inline">{favoriteTeam} {vsSymbol} {underdogTeam} - </span>
+                            </>
                           );
                         })()}
-                        Tiebreaker:
+                        <span className="lg:hidden">Tiebreaker:</span>
                       </span>
                     </div>
                     <input
