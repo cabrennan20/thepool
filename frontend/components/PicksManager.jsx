@@ -333,22 +333,21 @@ const PicksManager = () => {
                                     : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
                                 } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                               >
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center justify-center sm:justify-start sm:space-x-2">
                                   {favoriteLogo && (
                                     <img 
                                       src={favoriteLogo} 
                                       alt={favoriteTeam}
-                                      className="w-6 h-6 object-contain"
+                                      className="w-8 h-8 sm:w-6 sm:h-6 object-contain"
                                     />
                                   )}
-                                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                    <span className="hidden sm:inline">{favoriteTeam}</span>
-                                    <span className="sm:hidden">{favoriteTeam.split(' ').pop()}</span>
+                                  <span className="hidden sm:inline text-sm font-medium text-gray-900 dark:text-white">
+                                    {favoriteTeam}
                                   </span>
                                 </div>
-                                <div className="flex items-center space-x-1">
+                                <div className="flex flex-col sm:flex-row items-center sm:space-x-1">
                                   {game.spread && (
-                                    <span className="text-xs font-semibold text-red-600 dark:text-red-400">
+                                    <span className="text-sm sm:text-xs font-bold sm:font-semibold text-red-600 dark:text-red-400">
                                       -{Math.abs(game.spread)}
                                     </span>
                                   )}
@@ -375,22 +374,21 @@ const PicksManager = () => {
                                     : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
                                 } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                               >
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center justify-center sm:justify-start sm:space-x-2">
                                   {underdogLogo && (
                                     <img 
                                       src={underdogLogo} 
                                       alt={underdogTeam}
-                                      className="w-6 h-6 object-contain"
+                                      className="w-8 h-8 sm:w-6 sm:h-6 object-contain"
                                     />
                                   )}
-                                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                    <span className="hidden sm:inline">{underdogTeam}</span>
-                                    <span className="sm:hidden">{underdogTeam.split(' ').pop()}</span>
+                                  <span className="hidden sm:inline text-sm font-medium text-gray-900 dark:text-white">
+                                    {underdogTeam}
                                   </span>
                                 </div>
-                                <div className="flex items-center space-x-1">
+                                <div className="flex flex-col sm:flex-row items-center sm:space-x-1">
                                   {game.spread && (
-                                    <span className="text-xs font-semibold text-green-600 dark:text-green-400">
+                                    <span className="text-sm sm:text-xs font-bold sm:font-semibold text-green-600 dark:text-green-400">
                                       +{Math.abs(game.spread)}
                                     </span>
                                   )}
