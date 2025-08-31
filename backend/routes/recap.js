@@ -143,7 +143,7 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
       
       return {
         user_id: user.user_id,
-        alias: user.alias,
+        alias: user.alias || user.username,
         username: user.username,
         picks: userPicks,
         tiebreaker_points: tiebreakerPoints
