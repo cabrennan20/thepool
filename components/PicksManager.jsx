@@ -254,7 +254,7 @@ const PicksManager = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
           <img 
-            src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" 
+            src="https://upload.wikimedia.org/wikipedia/en/a/a2/National_Football_League_logo.svg" 
             alt="NFL Logo" 
             className="w-8 h-8 object-contain"
           />
