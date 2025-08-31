@@ -11,7 +11,7 @@ const loginSchema = z.object({
 });
 
 const registerSchema = z.object({
-  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
+  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_\s]+$/, 'Username can only contain letters, numbers, spaces, and underscores'),
   email: z.string().email().max(100),
   password: z.string().min(8).max(100),
   first_name: z.string().min(1).max(50).optional(),

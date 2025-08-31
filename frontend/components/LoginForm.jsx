@@ -26,7 +26,7 @@ const LoginForm = () => {
       case 'username':
         if (value.length < 3) return 'Username must be at least 3 characters';
         if (value.length > 50) return 'Username must be 50 characters or less';
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Username can only contain letters, numbers, and underscores';
+        if (!/^[a-zA-Z0-9_\s]+$/.test(value)) return 'Username can only contain letters, numbers, spaces, and underscores';
         return null;
       
       case 'email':
