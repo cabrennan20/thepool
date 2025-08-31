@@ -75,6 +75,18 @@ async function syncLiveGames(week = null, season = 2025) {
 
     console.log(`📅 Fetching games for Week ${week}, ${season} season...`);
 
+    // Calculate date range for the specified week
+    // NFL Week 1 typically starts around September 5-8
+    const week1Start = new Date(`${season}-09-05`);
+    const weekStart = new Date(week1Start);
+    weekStart.setDate(week1Start.getDate() + (week - 1) * 7);
+    
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59);
+
+    console.log(`📆 Week ${week} date range: ${weekStart.toDateString()} to ${weekEnd.toDateString()}`);
+
     // Fetch games from The Odds API
     const response = await axios.get('https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds', {
       params: {
@@ -85,12 +97,19 @@ async function syncLiveGames(week = null, season = 2025) {
       }
     });
 
-    console.log(`📊 Found ${response.data.length} games from API`);
+    // Filter games to only the specified week
+    const weekGames = response.data.filter(game => {
+      const gameDate = new Date(game.commence_time);
+      return gameDate >= weekStart && gameDate <= weekEnd;
+    });
+
+    console.log(`📊 Found ${response.data.length} total games from API`);
+    console.log(`🎯 Filtered to ${weekGames.length} games for Week ${week}`);
 
     let gamesCreated = 0;
     let gamesUpdated = 0;
 
-    for (const game of response.data) {
+    for (const game of weekGames) {
       try {
         const homeTeam = teamMapping[game.home_team] || game.home_team;
         const awayTeam = teamMapping[game.away_team] || game.away_team;
