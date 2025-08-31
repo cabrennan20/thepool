@@ -341,6 +341,16 @@ class ApiClient {
     }
   }
 
+  async getCurrentWeek() {
+    try {
+      const data = await this.request('/system/current-week');
+      return data;
+    } catch (error) {
+      console.warn('Failed to get current week, defaulting to week 1:', error);
+      return { season: new Date().getFullYear(), week: 1 };
+    }
+  }
+
   // Helper method for mock data
   generateMockToken(user) {
     const header = { alg: 'none', typ: 'JWT' };

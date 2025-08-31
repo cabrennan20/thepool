@@ -17,6 +17,7 @@ const PicksManager = () => {
   const [unselectedGames, setUnselectedGames] = useState([]);
   const [errorMessageIndex, setErrorMessageIndex] = useState(0);
   const [tiebreakerErrorIndex, setTiebreakerErrorIndex] = useState(0);
+  const [currentWeek, setCurrentWeek] = useState(1);
 
   const errorMessages = [
     {
@@ -77,13 +78,15 @@ const PicksManager = () => {
         
         setGames(gamesWithLogos);
         
+        // Get current week from system settings
+        const weekData = await api.getCurrentWeek();
+        setCurrentWeek(weekData.week);
+        
         // Load existing picks for current week
         try {
-          const currentDate = new Date();
-          const currentWeek = 1; // TODO: Get from system settings
-          const currentSeason = currentDate.getFullYear();
+          const currentSeason = weekData.season;
           
-          const existingPicks = await api.getUserPicks(user.user_id, currentWeek, currentSeason);
+          const existingPicks = await api.getUserPicks(user.user_id, weekData.week, currentSeason);
           setPicks(existingPicks);
           
           // Load existing tiebreaker points from final game pick
@@ -250,7 +253,7 @@ const PicksManager = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          🏈 Weekly Picks
+          🏈 Week {currentWeek} Picks
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Make your picks for this week's games. Select the team you think will win.
