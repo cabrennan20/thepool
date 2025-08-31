@@ -36,7 +36,12 @@ node scripts/create-mock-picks.js   # Generate test data
 This project has an **unusual dual frontend setup** for deployment flexibility:
 - **Root level**: Complete Next.js frontend configured for Vercel deployment
 - **/frontend/**: Identical Next.js frontend (subdirectory copy for alternative deployment)
-- When making frontend changes, you typically need to update both locations or use the root level as primary
+- **CRITICAL**: When making frontend changes, you MUST update both locations:
+  - `/components/` AND `/frontend/components/`
+  - `/pages/` AND `/frontend/pages/`
+  - `/lib/` AND `/frontend/lib/`
+  - Always check both locations exist before making changes
+  - Use the root level as primary, then copy changes to `/frontend/`
 
 ### Backend API Architecture
 Express.js API server in `/backend/` with modular route structure:
