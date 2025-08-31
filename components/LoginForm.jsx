@@ -26,7 +26,7 @@ const LoginForm = () => {
       case 'username':
         if (value.length < 3) return 'Username must be at least 3 characters';
         if (value.length > 50) return 'Username must be 50 characters or less';
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Username can only contain letters, numbers, and underscores';
+        if (!/^[a-zA-Z0-9_\s]+$/.test(value)) return 'Username can only contain letters, numbers, spaces, and underscores';
         return null;
       
       case 'email':
@@ -121,8 +121,16 @@ const LoginForm = () => {
       await login(username, password);
       
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
-      setRegisterError(errorMessage);
+      if (error.details && Array.isArray(error.details)) {
+        // Show detailed validation errors
+        const detailedErrors = error.details.map(detail => 
+          `${detail.path.join('.')}: ${detail.message}`
+        ).join('\n');
+        setRegisterError(detailedErrors);
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+        setRegisterError(errorMessage);
+      }
     } finally {
       setRegisterLoading(false);
     }
@@ -284,7 +292,7 @@ const LoginForm = () => {
             {/* Error Messages */}
             {(error || registerError) && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-600 text-sm text-center">{error || registerError}</p>
+                <div className="text-red-600 text-sm text-center whitespace-pre-line">{error || registerError}</div>
               </div>
             )}
 
