@@ -316,4 +316,50 @@ router.get('/user/:userId/week/:week', authenticateToken, async (req, res) => {
   }
 });
 
+// TEMPORARY DEBUG ENDPOINT - Remove after testing
+router.get('/debug/picks/:week', async (req, res) => {
+  try {
+    const week = parseInt(req.params.week);
+    const season = parseInt(req.query.season) || new Date().getFullYear();
+    
+    // Check users
+    const usersResult = await req.db.query(
+      'SELECT user_id, username, alias, is_active FROM users WHERE is_active = true ORDER BY alias'
+    );
+    
+    // Check picks for this week
+    const picksResult = await req.db.query(
+      `SELECT p.user_id, p.game_id, p.selected_team, u.alias, g.home_team, g.away_team
+       FROM picks p 
+       JOIN users u ON p.user_id = u.user_id 
+       JOIN games g ON p.game_id = g.game_id 
+       WHERE g.week = $1 AND g.season = $2 AND u.is_active = true
+       ORDER BY u.alias, g.game_date`,
+      [week, season]
+    );
+    
+    // Check games
+    const gamesResult = await req.db.query(
+      'SELECT game_id, home_team, away_team, game_date FROM games WHERE week = $1 AND season = $2 ORDER BY game_date',
+      [week, season]
+    );
+    
+    res.json({
+      debug: true,
+      week,
+      season,
+      users: usersResult.rows,
+      picks: picksResult.rows,
+      games: gamesResult.rows,
+      pickCount: picksResult.rows.length,
+      userCount: usersResult.rows.length,
+      gameCount: gamesResult.rows.length
+    });
+    
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
