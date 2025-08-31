@@ -30,15 +30,18 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
     const now = new Date();
     const picksAreClosed = new Date(firstGame.game_date) <= now;
 
-    if (!picksAreClosed) {
-      return res.status(403).json({
-        error: 'Recap not available - picks are still open',
-        week,
-        season,
-        first_game_date: firstGame.game_date,
-        picks_close_at: firstGame.game_date
-      });
-    }
+    // TODO: TESTING MODE - Remove this override after initial testing period
+    // Temporarily allow recap viewing even when picks are still open for testing
+    // RESTORE PICK DEADLINE ENFORCEMENT after testing is complete
+    // if (!picksAreClosed) {
+    //   return res.status(403).json({
+    //     error: 'Recap not available - picks are still open',
+    //     week,
+    //     season,
+    //     first_game_date: firstGame.game_date,
+    //     picks_close_at: firstGame.game_date
+    //   });
+    // }
 
     // Get all games for this week
     const gamesResult = await req.db.query(
