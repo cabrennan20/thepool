@@ -252,8 +252,13 @@ const PicksManager = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          🏈 Week {currentWeek} Picks
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
+          <img 
+            src="https://logos-world.net/wp-content/uploads/2020/06/NFL-Logo.png" 
+            alt="NFL Logo" 
+            className="w-10 h-6 object-contain"
+          />
+          Week {currentWeek} Picks
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Make your picks for this week's games. Select the team you think will win.
