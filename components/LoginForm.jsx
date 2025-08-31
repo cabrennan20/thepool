@@ -207,14 +207,6 @@ const LoginForm = () => {
             </button>
           </div>
 
-          {/* Demo Credentials */}
-          {isLogin && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-blue-800 text-center">
-                <span className="font-semibold">Demo:</span> admin / password123
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
