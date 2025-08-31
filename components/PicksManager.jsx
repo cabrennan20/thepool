@@ -313,9 +313,9 @@ const PicksManager = () => {
                         {(() => {
                           // Negative spread = home team favored, Positive spread = away team favored
                           const isHomeFavored = game.spread < 0;
-                          const favoriteTeam = isHomeFavored ? game.home_team : game.away_team;
+                          const favoriteTeam = isHomeFavored ? game.home_team_abbr : game.away_team_abbr;
                           const favoriteLogo = isHomeFavored ? game.home_logo : game.away_logo;
-                          const underdogTeam = isHomeFavored ? game.away_team : game.home_team;
+                          const underdogTeam = isHomeFavored ? game.away_team_abbr : game.home_team_abbr;
                           const underdogLogo = isHomeFavored ? game.away_logo : game.home_logo;
                           
                           // vs/@ logic: "vs" when favorite is home, "@" when favorite is away (underdog is home)
@@ -451,8 +451,8 @@ const PicksManager = () => {
                         {games.length > 0 && (() => {
                           const finalGame = games[games.length - 1];
                           const isHomeFavored = finalGame.spread < 0;
-                          const favoriteTeam = isHomeFavored ? finalGame.home_team : finalGame.away_team;
-                          const underdogTeam = isHomeFavored ? finalGame.away_team : finalGame.home_team;
+                          const favoriteTeam = isHomeFavored ? finalGame.home_team_abbr : finalGame.away_team_abbr;
+                          const underdogTeam = isHomeFavored ? finalGame.away_team_abbr : finalGame.home_team_abbr;
                           const vsSymbol = isHomeFavored ? 'vs' : '@';
                           return (
                             <>
