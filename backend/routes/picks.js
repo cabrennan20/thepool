@@ -72,6 +72,14 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     await client.query('BEGIN');
 
+    // DEBUG: Log incoming pick submission
+    console.log('DEBUG - Pick submission received:', {
+      userId: req.user.userId,
+      username: req.user.username,
+      bodySize: JSON.stringify(req.body).length,
+      pickCount: req.body.picks?.length
+    });
+
     const validatedData = picksSubmissionSchema.parse(req.body);
     const { picks } = validatedData;
     const userId = req.user.userId;
@@ -153,6 +161,15 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     await client.query('COMMIT');
+
+    // DEBUG: Log successful submission
+    console.log('DEBUG - Picks saved successfully:', {
+      userId,
+      username: req.user.username,
+      picksSaved: insertedPicks.length,
+      week: currentWeek,
+      season: currentSeason
+    });
 
     res.status(201).json({
       message: 'Picks submitted successfully',
