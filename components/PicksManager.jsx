@@ -319,7 +319,7 @@ const PicksManager = () => {
                               <button
                                 onClick={() => !isGameStarted && updatePick(game.game_id, favoriteTeam)}
                                 disabled={isGameStarted}
-                                className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                                className={`flex-1 flex items-center justify-between py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
                                   currentPick?.selected_team === favoriteTeam
                                     ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
                                     : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
@@ -338,28 +338,30 @@ const PicksManager = () => {
                                     <span className="sm:hidden">{favoriteTeam.split(' ').pop()}</span>
                                   </span>
                                 </div>
-                                {currentPick?.selected_team === favoriteTeam && (
-                                  <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
-                                )}
+                                <div className="flex items-center space-x-1">
+                                  {game.spread && (
+                                    <span className="text-xs font-semibold text-red-600 dark:text-red-400">
+                                      -{Math.abs(game.spread)}
+                                    </span>
+                                  )}
+                                  {currentPick?.selected_team === favoriteTeam && (
+                                    <div className="text-blue-600 font-bold text-lg">✓</div>
+                                  )}
+                                </div>
                               </button>
 
-                              {/* VS/@ with Spread */}
-                              <div className="flex flex-col items-center px-3">
+                              {/* VS/@ */}
+                              <div className="flex items-center px-3">
                                 <div className="text-gray-400 font-bold text-sm">
                                   {vsSymbol}
                                 </div>
-                                {game.spread && (
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    {Math.abs(game.spread)}
-                                  </div>
-                                )}
                               </div>
 
                               {/* Underdog Team (Right) */}
                               <button
                                 onClick={() => !isGameStarted && updatePick(game.game_id, underdogTeam)}
                                 disabled={isGameStarted}
-                                className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                                className={`flex-1 flex items-center justify-between py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
                                   currentPick?.selected_team === underdogTeam
                                     ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
                                     : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
@@ -378,9 +380,16 @@ const PicksManager = () => {
                                     <span className="sm:hidden">{underdogTeam.split(' ').pop()}</span>
                                   </span>
                                 </div>
-                                {currentPick?.selected_team === underdogTeam && (
-                                  <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
-                                )}
+                                <div className="flex items-center space-x-1">
+                                  {game.spread && (
+                                    <span className="text-xs font-semibold text-green-600 dark:text-green-400">
+                                      +{Math.abs(game.spread)}
+                                    </span>
+                                  )}
+                                  {currentPick?.selected_team === underdogTeam && (
+                                    <div className="text-blue-600 font-bold text-lg">✓</div>
+                                  )}
+                                </div>
                               </button>
                             </>
                           );
