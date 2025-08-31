@@ -16,6 +16,82 @@ const LoginForm = () => {
   const [registerLoading, setRegisterLoading] = useState(false);
   const { login, isLoading, error } = useAuth();
 
+  // Validation state
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [fieldTouched, setFieldTouched] = useState({});
+
+  // Validation functions matching backend schema
+  const validateField = (fieldName, value) => {
+    switch (fieldName) {
+      case 'username':
+        if (value.length < 3) return 'Username must be at least 3 characters';
+        if (value.length > 50) return 'Username must be 50 characters or less';
+        if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Username can only contain letters, numbers, and underscores';
+        return null;
+      
+      case 'email':
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email address';
+        if (value.length > 100) return 'Email must be 100 characters or less';
+        return null;
+      
+      case 'password':
+        if (value.length < 8) return 'Password must be at least 8 characters';
+        if (value.length > 100) return 'Password must be 100 characters or less';
+        return null;
+      
+      case 'firstName':
+        if (value.length < 1) return 'First name is required';
+        if (value.length > 50) return 'First name must be 50 characters or less';
+        return null;
+      
+      case 'lastName':
+        if (value.length < 1) return 'Last name is required';
+        if (value.length > 50) return 'Last name must be 50 characters or less';
+        return null;
+      
+      case 'alias':
+        if (value.length < 2) return 'Alias must be at least 2 characters';
+        if (value.length > 50) return 'Alias must be 50 characters or less';
+        if (!/^[a-zA-Z0-9\s&'-]+$/.test(value)) return 'Alias can only contain letters, numbers, spaces, and common symbols (&, \', -)';
+        return null;
+      
+      case 'phone':
+        if (value.length < 10) return 'Phone number must be at least 10 characters';
+        if (value.length > 20) return 'Phone number must be 20 characters or less';
+        if (!/^[\d\s\-+().\s]+$/.test(value)) return 'Phone number can only contain digits, spaces, and common symbols';
+        return null;
+      
+      case 'venmoPaypalHandle':
+        if (value.length < 1) return 'Venmo/PayPal handle is required';
+        if (value.length > 100) return 'Handle must be 100 characters or less';
+        if (!/^@?[a-zA-Z0-9_-]+$/.test(value)) return 'Handle must be a valid username format (letters, numbers, underscore, dash)';
+        return null;
+      
+      default:
+        return null;
+    }
+  };
+
+  const handleFieldBlur = (fieldName, value) => {
+    setFieldTouched(prev => ({ ...prev, [fieldName]: true }));
+    const error = validateField(fieldName, value);
+    setFieldErrors(prev => ({ ...prev, [fieldName]: error }));
+  };
+
+  const getFieldClasses = (fieldName) => {
+    const baseClasses = "w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200";
+    const hasError = fieldTouched[fieldName] && fieldErrors[fieldName];
+    const isValid = fieldTouched[fieldName] && !fieldErrors[fieldName];
+    
+    if (hasError) {
+      return `${baseClasses} bg-red-50 border-red-300 focus:ring-red-500 focus:border-red-500`;
+    } else if (isValid) {
+      return `${baseClasses} bg-green-50 border-green-300 focus:ring-green-500 focus:border-green-500`;
+    } else {
+      return `${baseClasses} bg-gray-50 border-gray-200 focus:ring-blue-500 focus:border-transparent`;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLogin) {
@@ -81,68 +157,96 @@ const LoginForm = () => {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={getFieldClasses('firstName')}
                       placeholder="First Name"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
+                      onBlur={(e) => handleFieldBlur('firstName', e.target.value)}
                     />
+                    {fieldTouched.firstName && fieldErrors.firstName && (
+                      <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.firstName}</p>
+                    )}
                   </div>
                   <div>
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={getFieldClasses('lastName')}
                       placeholder="Last Name"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      onBlur={(e) => handleFieldBlur('lastName', e.target.value)}
                     />
+                    {fieldTouched.lastName && fieldErrors.lastName && (
+                      <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.lastName}</p>
+                    )}
                   </div>
                 </div>
                 <div>
                   <input
                     type="email"
                     required
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className={getFieldClasses('email')}
                     placeholder="Email Address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onBlur={(e) => handleFieldBlur('email', e.target.value)}
                   />
+                  {fieldTouched.email && fieldErrors.email && (
+                    <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.email}</p>
+                  )}
                 </div>
                 <div>
                   <input
                     type="text"
                     required
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className={getFieldClasses('alias')}
                     placeholder="Member Alias (how you'll appear to others)"
                     value={alias}
                     onChange={(e) => setAlias(e.target.value)}
+                    onBlur={(e) => handleFieldBlur('alias', e.target.value)}
                   />
-                  <p className="text-xs text-gray-500 mt-1 px-1">
-                    This is your display name in the league (e.g., "Team Ram Rod", "Clammy Twatkins")
-                  </p>
+                  {fieldTouched.alias && fieldErrors.alias && (
+                    <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.alias}</p>
+                  )}
+                  {(!fieldTouched.alias || !fieldErrors.alias) && (
+                    <p className="text-xs text-gray-500 mt-1 px-1">
+                      This is your display name in the league (e.g., "Team Ram Rod", "Clammy Twatkins")
+                    </p>
+                  )}
                 </div>
                 <div>
                   <input
                     type="tel"
                     required
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className={getFieldClasses('phone')}
                     placeholder="Phone Number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    onBlur={(e) => handleFieldBlur('phone', e.target.value)}
                   />
+                  {fieldTouched.phone && fieldErrors.phone && (
+                    <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.phone}</p>
+                  )}
                 </div>
                 <div>
                   <input
                     type="text"
                     required
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className={getFieldClasses('venmoPaypalHandle')}
                     placeholder="Venmo/PayPal Handle (e.g., @username)"
                     value={venmoPaypalHandle}
                     onChange={(e) => setVenmoPaypalHandle(e.target.value)}
+                    onBlur={(e) => handleFieldBlur('venmoPaypalHandle', e.target.value)}
                   />
-                  <p className="text-xs text-gray-500 mt-1 px-1">
-                    Your Venmo or PayPal username for league payments
-                  </p>
+                  {fieldTouched.venmoPaypalHandle && fieldErrors.venmoPaypalHandle && (
+                    <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.venmoPaypalHandle}</p>
+                  )}
+                  {(!fieldTouched.venmoPaypalHandle || !fieldErrors.venmoPaypalHandle) && (
+                    <p className="text-xs text-gray-500 mt-1 px-1">
+                      Your Venmo or PayPal username for league payments
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -151,22 +255,30 @@ const LoginForm = () => {
               <input
                 type="text"
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className={isLogin ? "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" : getFieldClasses('username')}
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                onBlur={!isLogin ? (e) => handleFieldBlur('username', e.target.value) : undefined}
               />
+              {!isLogin && fieldTouched.username && fieldErrors.username && (
+                <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.username}</p>
+              )}
             </div>
             
             <div>
               <input
                 type="password"
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className={isLogin ? "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" : getFieldClasses('password')}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onBlur={!isLogin ? (e) => handleFieldBlur('password', e.target.value) : undefined}
               />
+              {!isLogin && fieldTouched.password && fieldErrors.password && (
+                <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.password}</p>
+              )}
             </div>
 
             {/* Error Messages */}
