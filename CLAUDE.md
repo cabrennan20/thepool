@@ -102,15 +102,20 @@ Schema files in `/database/` with migration scripts for updates.
 - **Always test both development and production builds before deployment**
 
 ### Automatic Git Workflow
-**IMPORTANT**: After completing any task or set of changes, ALWAYS commit and push to the remote repository immediately:
+**IMPORTANT**: After completing any major changes or feature updates, ALWAYS commit and push to the remote repository immediately:
 
 1. **After completing changes**: Run `git status` and `git diff` to review changes
 2. **Stage relevant files**: Add all modified files with `git add .` or selectively stage files
 3. **Create descriptive commit**: Use format "Brief description of changes" with standard footer
-4. **Push to remote**: Always push to remote repository unless explicitly told not to
+4. **Push to remote**: Always push to remote repository to trigger automatic deployments
 5. **Verify deployment**: Check that both Railway (backend) and Vercel (frontend) deployments succeed
 
-This ensures all work is immediately saved and deployed to production.
+This ensures all work is immediately saved and deployed to production. Major changes include:
+- New features or functionality
+- Bug fixes affecting user experience
+- UI/UX improvements
+- Database schema changes
+- Security updates
 
 ### Database Changes
 1. Create new migration file in `/database/`
