@@ -327,7 +327,7 @@ const PicksManager = () => {
                               <button
                                 onClick={() => !isGameStarted && updatePick(game.game_id, favoriteTeam)}
                                 disabled={isGameStarted}
-                                className={`flex-[0.75] flex items-center justify-between py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                                className={`flex-[0.75] flex items-center justify-between py-1.5 px-2 sm:py-3 sm:px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
                                   currentPick?.selected_team === favoriteTeam
                                     ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
                                     : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
@@ -338,7 +338,7 @@ const PicksManager = () => {
                                     <img 
                                       src={favoriteLogo} 
                                       alt={favoriteTeam}
-                                      className="w-8 h-8 sm:w-6 sm:h-6 object-contain"
+                                      className="w-10 h-10 sm:w-6 sm:h-6 object-contain"
                                     />
                                   )}
                                   <span className="hidden sm:inline text-sm font-medium text-gray-900 dark:text-white">
@@ -368,7 +368,7 @@ const PicksManager = () => {
                               <button
                                 onClick={() => !isGameStarted && updatePick(game.game_id, underdogTeam)}
                                 disabled={isGameStarted}
-                                className={`flex-[0.75] flex items-center justify-between py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                                className={`flex-[0.75] flex items-center justify-between py-1.5 px-2 sm:py-3 sm:px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
                                   currentPick?.selected_team === underdogTeam
                                     ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
                                     : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
@@ -379,7 +379,7 @@ const PicksManager = () => {
                                     <img 
                                       src={underdogLogo} 
                                       alt={underdogTeam}
-                                      className="w-8 h-8 sm:w-6 sm:h-6 object-contain"
+                                      className="w-10 h-10 sm:w-6 sm:h-6 object-contain"
                                     />
                                   )}
                                   <span className="hidden sm:inline text-sm font-medium text-gray-900 dark:text-white">
@@ -441,29 +441,41 @@ const PicksManager = () => {
               
               {/* Tiebreaker in Side Panel */}
               {games.length > 0 && (
-                <div className="border-t pt-2 lg:pt-4">
+                <div className="border-t lg:border-t-0 pt-2 lg:pt-4">
                   <h4 className="hidden lg:block text-md font-semibold text-gray-900 dark:text-white mb-2">
                     🎯 Tiebreaker
                   </h4>
                   <div className="flex items-center space-x-2 lg:block">
-                    <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 lg:mb-3 whitespace-nowrap">
-                      Tiebreaker:
-                    </span>
+                    <div className="flex-1">
+                      <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 lg:mb-3 whitespace-nowrap block lg:inline">
+                        {games.length > 0 && (() => {
+                          const finalGame = games[games.length - 1];
+                          const isHomeFavored = finalGame.spread < 0;
+                          const favoriteTeam = isHomeFavored ? finalGame.home_team : finalGame.away_team;
+                          const underdogTeam = isHomeFavored ? finalGame.away_team : finalGame.home_team;
+                          const vsSymbol = isHomeFavored ? 'vs' : '@';
+                          return (
+                            <span className="lg:hidden">{favoriteTeam} {vsSymbol} {underdogTeam} - </span>
+                          );
+                        })()}
+                        Tiebreaker:
+                      </span>
+                    </div>
                     <input
                       type="number"
                       min="0"
-                      max="200"
+                      max="99"
                       value={tiebreakerPoints}
                       onChange={(e) => setTiebreakerPoints(e.target.value === '' ? '' : parseInt(e.target.value))}
-                      className="flex-1 lg:w-full px-2 lg:px-3 py-1 lg:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Total points"
+                      className="w-16 lg:w-full px-2 lg:px-3 py-1 lg:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                      placeholder="99"
                     />
                   </div>
                 </div>
               )}
               
               {/* Submit Button in Side Panel */}
-              <div className="mt-2 lg:mt-6 border-t lg:border-t pt-2 lg:pt-4">
+              <div className="mt-2 lg:mt-6 border-t lg:border-t-0 pt-2 lg:pt-4">
                 <button
                   onClick={submitPicks}
                   disabled={submitting}
