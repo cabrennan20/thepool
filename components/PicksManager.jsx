@@ -272,9 +272,9 @@ const PicksManager = () => {
       )}
 
       {/* Main Layout: Games + Side Panel */}
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 lg:h-auto h-[calc(100vh-12rem)]">
         {/* Games List - ESPN Style with Date Headers */}
-        <div className="flex-1 order-2 lg:order-1">
+        <div className="flex-1 order-2 lg:order-1 overflow-y-auto lg:overflow-visible pb-32 lg:pb-0">
           {Object.entries(groupGamesByDate(games)).map(([dateKey, dateGames]) => {
             const dateHeader = formatDateHeader(dateGames[0].game_date);
             
@@ -410,30 +410,30 @@ const PicksManager = () => {
         </div>
 
         {/* Side Panel with Progress */}
-        <div className="lg:w-80 flex-shrink-0 order-1 lg:order-2">
+        <div className="lg:w-80 flex-shrink-0 order-1 lg:order-2 fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto z-10">
           {games.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm sticky top-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-t-lg lg:rounded-lg p-3 lg:p-6 shadow-lg lg:shadow-sm lg:sticky lg:top-6 border-t lg:border-t-0 border-gray-200 dark:border-gray-700">
+              <h3 className="hidden lg:block text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Your Progress
               </h3>
-              <div className="mb-4">
-                <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+              <div className="mb-2 lg:mb-4">
+                <div className="flex items-center justify-between text-xs lg:text-sm text-gray-600 dark:text-gray-400 mb-1 lg:mb-2">
                   <span>Games Picked</span>
                   <span>{picks.length}/{games.length}</span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 lg:h-3">
                   <div 
-                    className="bg-blue-600 h-3 rounded-full transition-all duration-500" 
+                    className="bg-blue-600 h-2 lg:h-3 rounded-full transition-all duration-500" 
                     style={{ width: `${games.length > 0 ? (picks.length / games.length) * 100 : 0}%` }}
                   />
                 </div>
                 {picks.length === games.length && tiebreakerPoints !== '' && (
-                  <div className="mt-2 text-green-600 font-medium text-sm">
+                  <div className="mt-1 lg:mt-2 text-green-600 font-medium text-xs lg:text-sm">
                     🎉 All picks and tiebreaker complete!
                   </div>
                 )}
                 {picks.length === games.length && tiebreakerPoints === '' && (
-                  <div className="mt-2 text-orange-600 font-medium text-sm">
+                  <div className="mt-1 lg:mt-2 text-orange-600 font-medium text-xs lg:text-sm">
                     🎯 Add tiebreaker to complete!
                   </div>
                 )}
@@ -441,32 +441,33 @@ const PicksManager = () => {
               
               {/* Tiebreaker in Side Panel */}
               {games.length > 0 && (
-                <div className="border-t pt-4">
-                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">
+                <div className="border-t pt-2 lg:pt-4">
+                  <h4 className="hidden lg:block text-md font-semibold text-gray-900 dark:text-white mb-2">
                     🎯 Tiebreaker
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    <span className="hidden sm:inline">Total points: {games[games.length - 1]?.away_team} @ {games[games.length - 1]?.home_team}</span>
-                    <span className="sm:hidden">Total points: {games[games.length - 1]?.away_team.split(' ').pop()} @ {games[games.length - 1]?.home_team.split(' ').pop()}</span>
-                  </p>
-                  <input
-                    type="number"
-                    min="0"
-                    max="200"
-                    value={tiebreakerPoints}
-                    onChange={(e) => setTiebreakerPoints(e.target.value === '' ? '' : parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter total points"
-                  />
+                  <div className="flex items-center space-x-2 lg:block">
+                    <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 lg:mb-3 whitespace-nowrap">
+                      Tiebreaker:
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="200"
+                      value={tiebreakerPoints}
+                      onChange={(e) => setTiebreakerPoints(e.target.value === '' ? '' : parseInt(e.target.value))}
+                      className="flex-1 lg:w-full px-2 lg:px-3 py-1 lg:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Total points"
+                    />
+                  </div>
                 </div>
               )}
               
               {/* Submit Button in Side Panel */}
-              <div className="mt-6 border-t pt-4">
+              <div className="mt-2 lg:mt-6 border-t lg:border-t pt-2 lg:pt-4">
                 <button
                   onClick={submitPicks}
                   disabled={submitting}
-                  className={`w-full px-4 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${submitting ? 'bg-gray-400 cursor-not-allowed' : picks.length === games.length && tiebreakerPoints !== '' ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl' : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'}`}
+                  className={`w-full px-3 lg:px-4 py-2 lg:py-3 rounded-lg font-semibold text-white text-sm lg:text-base transition-all duration-200 ${submitting ? 'bg-gray-400 cursor-not-allowed' : picks.length === games.length && tiebreakerPoints !== '' ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl' : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'}`}
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center">
@@ -501,7 +502,7 @@ const PicksManager = () => {
                 )}
                 
                 {picks.length > 0 && !validationError && (
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 text-center">
+                  <p className="hidden lg:block mt-2 text-sm text-gray-600 dark:text-gray-400 text-center">
                     {picks.length} of {games.length} games selected{tiebreakerPoints !== '' ? ', tiebreaker set' : ', tiebreaker needed'}
                   </p>
                 )}
