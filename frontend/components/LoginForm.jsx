@@ -64,7 +64,7 @@ const LoginForm = () => {
       case 'venmoPaypalHandle':
         if (value.length < 1) return 'Venmo/PayPal handle is required';
         if (value.length > 100) return 'Handle must be 100 characters or less';
-        if (!/^@?[a-zA-Z0-9_-]+$/.test(value)) return 'Handle must be a valid username format (letters, numbers, underscore, dash)';
+        if (!/^(@?[a-zA-Z0-9_-]+|[^\s@]+@[^\s@]+\.[^\s@]+)$/.test(value)) return 'Handle must be a valid username or email format';
         return null;
       
       default:

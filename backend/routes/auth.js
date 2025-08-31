@@ -18,7 +18,7 @@ const registerSchema = z.object({
   last_name: z.string().min(1).max(50).optional(),
   alias: z.string().min(2).max(50).regex(/^[a-zA-Z0-9\s&'-]+$/, 'Alias can only contain letters, numbers, spaces, and common symbols'),
   phone: z.string().min(10).max(20).regex(/^[\d\s\-+().\s]+$/, 'Phone number can only contain digits, spaces, and common symbols'),
-  venmo_paypal_handle: z.string().min(1).max(100).regex(/^@?[a-zA-Z0-9_-]+$/, 'Handle must be a valid username format')
+  venmo_paypal_handle: z.string().min(1).max(100).regex(/^(@?[a-zA-Z0-9_-]+|[^\s@]+@[^\s@]+\.[^\s@]+)$/, 'Handle must be a valid username or email format')
 });
 
 // JWT secret
