@@ -301,73 +301,90 @@ const PicksManager = () => {
                           {formatTime(game.game_date)}
                         </div>
                         
-                        {/* Away Team */}
-                        <button
-                          onClick={() => !isGameStarted && updatePick(game.game_id, game.away_team)}
-                          disabled={isGameStarted}
-                          className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
-                            currentPick?.selected_team === game.away_team
-                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
-                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
-                          } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
-                        >
-                          <div className="flex items-center space-x-2">
-                            {game.away_logo && (
-                              <img 
-                                src={game.away_logo} 
-                                alt={game.away_team}
-                                className="w-6 h-6 object-contain"
-                              />
-                            )}
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              <span className="hidden sm:inline">{game.away_team}</span>
-                              <span className="sm:hidden">{game.away_team.split(' ').pop()}</span>
-                            </span>
-                          </div>
-                          {currentPick?.selected_team === game.away_team && (
-                            <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
-                          )}
-                        </button>
+                        {/* Determine favorite/underdog and display order */}
+                        {(() => {
+                          // Negative spread = home team favored, Positive spread = away team favored
+                          const isHomeFavored = game.spread < 0;
+                          const favoriteTeam = isHomeFavored ? game.home_team : game.away_team;
+                          const favoriteLogo = isHomeFavored ? game.home_logo : game.away_logo;
+                          const underdogTeam = isHomeFavored ? game.away_team : game.home_team;
+                          const underdogLogo = isHomeFavored ? game.away_logo : game.home_logo;
+                          
+                          // vs/@ logic: "vs" when favorite is home, "@" when favorite is away (underdog is home)
+                          const vsSymbol = isHomeFavored ? 'vs' : '@';
+                          
+                          return (
+                            <>
+                              {/* Favorite Team (Left) */}
+                              <button
+                                onClick={() => !isGameStarted && updatePick(game.game_id, favoriteTeam)}
+                                disabled={isGameStarted}
+                                className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                                  currentPick?.selected_team === favoriteTeam
+                                    ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
+                                    : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                                } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                              >
+                                <div className="flex items-center space-x-2">
+                                  {favoriteLogo && (
+                                    <img 
+                                      src={favoriteLogo} 
+                                      alt={favoriteTeam}
+                                      className="w-6 h-6 object-contain"
+                                    />
+                                  )}
+                                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                    <span className="hidden sm:inline">{favoriteTeam}</span>
+                                    <span className="sm:hidden">{favoriteTeam.split(' ').pop()}</span>
+                                  </span>
+                                </div>
+                                {currentPick?.selected_team === favoriteTeam && (
+                                  <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
+                                )}
+                              </button>
 
-                        {/* VS/@ with Spread */}
-                        <div className="flex flex-col items-center px-3">
-                          <div className="text-gray-400 font-bold text-sm">
-                            {game.spread && game.spread > 0 ? '@' : 'vs'}
-                          </div>
-                          {game.spread && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {game.spread > 0 ? '+' : ''}{game.spread}
-                            </div>
-                          )}
-                        </div>
+                              {/* VS/@ with Spread */}
+                              <div className="flex flex-col items-center px-3">
+                                <div className="text-gray-400 font-bold text-sm">
+                                  {vsSymbol}
+                                </div>
+                                {game.spread && (
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    {Math.abs(game.spread)}
+                                  </div>
+                                )}
+                              </div>
 
-                        {/* Home Team */}
-                        <button
-                          onClick={() => !isGameStarted && updatePick(game.game_id, game.home_team)}
-                          disabled={isGameStarted}
-                          className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
-                            currentPick?.selected_team === game.home_team
-                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
-                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
-                          } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
-                        >
-                          <div className="flex items-center space-x-2">
-                            {game.home_logo && (
-                              <img 
-                                src={game.home_logo} 
-                                alt={game.home_team}
-                                className="w-6 h-6 object-contain"
-                              />
-                            )}
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              <span className="hidden sm:inline">{game.home_team}</span>
-                              <span className="sm:hidden">{game.home_team.split(' ').pop()}</span>
-                            </span>
-                          </div>
-                          {currentPick?.selected_team === game.home_team && (
-                            <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
-                          )}
-                        </button>
+                              {/* Underdog Team (Right) */}
+                              <button
+                                onClick={() => !isGameStarted && updatePick(game.game_id, underdogTeam)}
+                                disabled={isGameStarted}
+                                className={`flex-1 flex items-center justify-center py-3 px-4 mx-1 rounded-lg transition-all duration-200 relative shadow-sm ${
+                                  currentPick?.selected_team === underdogTeam
+                                    ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-500 shadow-md transform scale-[1.02]'
+                                    : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                                } ${isGameStarted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                              >
+                                <div className="flex items-center space-x-2">
+                                  {underdogLogo && (
+                                    <img 
+                                      src={underdogLogo} 
+                                      alt={underdogTeam}
+                                      className="w-6 h-6 object-contain"
+                                    />
+                                  )}
+                                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                    <span className="hidden sm:inline">{underdogTeam}</span>
+                                    <span className="sm:hidden">{underdogTeam.split(' ').pop()}</span>
+                                  </span>
+                                </div>
+                                {currentPick?.selected_team === underdogTeam && (
+                                  <div className="absolute right-2 text-blue-600 font-bold text-lg">✓</div>
+                                )}
+                              </button>
+                            </>
+                          );
+                        })()}
                       </div>
                     );
                   })}
