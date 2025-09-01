@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 
 const LoginForm = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -14,6 +15,9 @@ const LoginForm = () => {
   const [venmoPaypalHandle, setVenmoPaypalHandle] = useState('');
   const [registerError, setRegisterError] = useState(null);
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [forgotPasswordError, setForgotPasswordError] = useState(null);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
   const { login, isLoading, error } = useAuth();
 
   // Validation state
@@ -94,10 +98,28 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLogin) {
+    if (isForgotPassword) {
+      await handleForgotPassword();
+    } else if (isLogin) {
       await login(username, password);
     } else {
       await handleRegister();
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    try {
+      setForgotPasswordError(null);
+      setForgotPasswordLoading(true);
+      
+      const response = await api.forgotPassword(email);
+      setForgotPasswordSuccess(true);
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
+      setForgotPasswordError(errorMessage);
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -149,16 +171,38 @@ const LoginForm = () => {
               </div>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
+              {isForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Create Account'}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              {isLogin ? 'Sign in to ThePool' : 'Join ThePool today'}
+              {isForgotPassword ? 'Enter your email to reset password' : isLogin ? 'Sign in to ThePool' : 'Join ThePool today'}
             </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {isForgotPassword ? (
+              <>
+                {forgotPasswordSuccess ? (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="text-green-600 text-sm text-center">
+                      <p className="font-semibold mb-2">📧 Email Sent!</p>
+                      <p>If that email address is in our system, we've sent a password reset link. Check your email and click the link to reset your password.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="email"
+                      required
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter your email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                )}
+              </>
+            ) : !isLogin && (
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -259,72 +303,110 @@ const LoginForm = () => {
               </>
             )}
             
-            <div>
-              <input
-                type="text"
-                required
-                className={isLogin ? "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" : getFieldClasses('username')}
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onBlur={!isLogin ? (e) => handleFieldBlur('username', e.target.value) : undefined}
-              />
-              {!isLogin && fieldTouched.username && fieldErrors.username && (
-                <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.username}</p>
-              )}
-            </div>
-            
-            <div>
-              <input
-                type="password"
-                required
-                className={isLogin ? "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" : getFieldClasses('password')}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onBlur={!isLogin ? (e) => handleFieldBlur('password', e.target.value) : undefined}
-              />
-              {!isLogin && fieldTouched.password && fieldErrors.password && (
-                <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.password}</p>
-              )}
-            </div>
+            {(isLogin || (!isLogin && !isForgotPassword)) && (
+              <>
+                <div>
+                  <input
+                    type="text"
+                    required
+                    className={isLogin ? "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" : getFieldClasses('username')}
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    onBlur={!isLogin ? (e) => handleFieldBlur('username', e.target.value) : undefined}
+                  />
+                  {!isLogin && fieldTouched.username && fieldErrors.username && (
+                    <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.username}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <input
+                    type="password"
+                    required
+                    className={isLogin ? "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" : getFieldClasses('password')}
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onBlur={!isLogin ? (e) => handleFieldBlur('password', e.target.value) : undefined}
+                  />
+                  {!isLogin && fieldTouched.password && fieldErrors.password && (
+                    <p className="text-red-600 text-xs mt-1 px-1">{fieldErrors.password}</p>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* Error Messages */}
-            {(error || registerError) && (
+            {(error || registerError || forgotPasswordError) && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <div className="text-red-600 text-sm text-center whitespace-pre-line">{error || registerError}</div>
+                <div className="text-red-600 text-sm text-center whitespace-pre-line">{error || registerError || forgotPasswordError}</div>
               </div>
             )}
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading || registerLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 shadow-lg"
-            >
-              {isLoading || registerLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  {isLogin ? 'Signing in...' : 'Creating account...'}
-                </div>
-              ) : (
-                isLogin ? 'Sign In' : 'Create Account'
-              )}
-            </button>
+            {!forgotPasswordSuccess && (
+              <button
+                type="submit"
+                disabled={isLoading || registerLoading || forgotPasswordLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 shadow-lg"
+              >
+                {isLoading || registerLoading || forgotPasswordLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    {isForgotPassword ? 'Sending reset email...' : isLogin ? 'Signing in...' : 'Creating account...'}
+                  </div>
+                ) : (
+                  isForgotPassword ? 'Send Reset Email' : isLogin ? 'Sign In' : 'Create Account'
+                )}
+              </button>
+            )}
           </form>
 
-          {/* Toggle Login/Register */}
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors duration-200"
-            >
-              {isLogin ? 'Don\'t have an account? ' : 'Already have an account? '}
-              <span className="text-blue-600 font-semibold">
-                {isLogin ? 'Create one' : 'Sign in'}
-              </span>
-            </button>
+          {/* Toggle Login/Register/Forgot Password */}
+          <div className="mt-6 text-center space-y-2">
+            {isForgotPassword ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setIsLogin(true);
+                  setForgotPasswordSuccess(false);
+                  setForgotPasswordError(null);
+                }}
+                className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors duration-200"
+              >
+                ← Back to <span className="text-blue-600 font-semibold">Sign In</span>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors duration-200"
+                >
+                  {isLogin ? 'Don\'t have an account? ' : 'Already have an account? '}
+                  <span className="text-blue-600 font-semibold">
+                    {isLogin ? 'Create one' : 'Sign in'}
+                  </span>
+                </button>
+                
+                {isLogin && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotPassword(true);
+                        setIsLogin(false);
+                      }}
+                      className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors duration-200"
+                    >
+                      Forgot your password? <span className="text-blue-600 font-semibold">Reset it</span>
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
         </div>
