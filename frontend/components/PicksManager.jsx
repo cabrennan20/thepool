@@ -227,12 +227,22 @@ const PicksManager = () => {
     setSaved(false);
 
     try {
-      const picksToSubmit = picks.map(pick => ({
-        game_id: pick.game_id,
-        selected_team: pick.selected_team,
-        tiebreaker_points: pick.game_id === games[games.length - 1]?.game_id && tiebreakerPoints !== '' ? tiebreakerPoints : undefined
-      }));
+      // Only submit picks for games that actually have selections
+      const picksToSubmit = games
+        .map(game => {
+          const pick = getPick(game.game_id);
+          if (pick && pick.selected_team) {
+            return {
+              game_id: game.game_id,
+              selected_team: pick.selected_team,
+              tiebreaker_points: game.game_id === games[games.length - 1]?.game_id && tiebreakerPoints !== '' ? tiebreakerPoints : undefined
+            };
+          }
+          return null;
+        })
+        .filter(pick => pick !== null);
 
+      console.log('DEBUG - Submitting picks:', picksToSubmit);
       await api.submitPicks(picksToSubmit);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
