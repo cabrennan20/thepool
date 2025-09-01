@@ -69,8 +69,8 @@ const PicksManager = () => {
         // Add team helmet logos
         const gamesWithLogos = gamesData.map((game) => ({
           ...game,
-          home_logo: getTeamHelmetLogo(game.home_team),
-          away_logo: getTeamHelmetLogo(game.away_team)
+          home_logo: getTeamHelmetLogo(game.home_team_abbr || game.home_team),
+          away_logo: getTeamHelmetLogo(game.away_team_abbr || game.away_team)
         }));
 
         // Sort games by date
