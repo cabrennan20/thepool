@@ -232,11 +232,17 @@ const PicksManager = () => {
         .map(game => {
           const pick = getPick(game.game_id);
           if (pick && pick.selected_team) {
-            return {
+            const pickData = {
               game_id: game.game_id,
-              selected_team: pick.selected_team,
-              tiebreaker_points: game.game_id === games[games.length - 1]?.game_id && tiebreakerPoints !== '' ? tiebreakerPoints : undefined
+              selected_team: pick.selected_team
             };
+            
+            // Only add tiebreaker_points if it's the final game AND we have a valid number
+            if (game.game_id === games[games.length - 1]?.game_id && tiebreakerPoints !== '' && tiebreakerPoints !== null && !isNaN(tiebreakerPoints)) {
+              pickData.tiebreaker_points = parseInt(tiebreakerPoints);
+            }
+            
+            return pickData;
           }
           return null;
         })
