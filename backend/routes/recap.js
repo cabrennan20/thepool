@@ -71,8 +71,6 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
         u.user_id,
         u.username,
         u.alias,
-        u.first_name,
-        u.last_name,
         p.game_id,
         p.selected_team,
         p.tiebreaker_points,
@@ -110,8 +108,6 @@ router.get('/week/:week', authenticateToken, async (req, res) => {
           user_id: userId,
           username: row.username,
           alias: row.alias || row.username,
-          first_name: row.first_name,
-          last_name: row.last_name,
           picks: new Map()
         });
       }

@@ -186,9 +186,7 @@ router.get('/:gameId/picks', async (req, res) => {
         p.tiebreaker_points,
         p.is_correct,
         u.username,
-        u.alias,
-        u.first_name,
-        u.last_name
+        u.alias
       FROM picks p
       JOIN users u ON p.user_id = u.user_id
       WHERE p.game_id = $1

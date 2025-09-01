@@ -17,8 +17,6 @@ router.get('/weekly', async (req, res) => {
         ws.user_id,
         u.username,
         u.alias,
-        u.first_name,
-        u.last_name,
         ws.week,
         ws.season,
         ws.correct_picks,
@@ -55,8 +53,6 @@ router.get('/season', async (req, res) => {
         u.user_id,
         u.username,
         u.alias,
-        u.first_name,
-        u.last_name,
         COUNT(ws.week) as weeks_played,
         COALESCE(SUM(ws.correct_picks), 0) as total_correct,
         COALESCE(SUM(ws.total_picks), 0) as total_games,
@@ -73,7 +69,7 @@ router.get('/season', async (req, res) => {
       FROM users u
       LEFT JOIN weekly_scores ws ON u.user_id = ws.user_id AND ws.season = $1
       WHERE u.is_active = true
-      GROUP BY u.user_id, u.username, u.alias, u.first_name, u.last_name
+      GROUP BY u.user_id, u.username, u.alias
       HAVING COUNT(ws.week) > 0 OR u.is_admin = true
       ORDER BY total_correct DESC, weeks_played DESC, u.alias`,
       [season]
@@ -344,15 +340,14 @@ router.get('/summary', async (req, res) => {
     const topPerformersResult = await req.db.query(
       `SELECT 
         u.username,
-        u.first_name,
-        u.last_name,
+        u.alias,
         SUM(ws.total_points) as total_points,
         SUM(ws.correct_picks) as total_correct,
         COUNT(ws.week) as weeks_played
       FROM weekly_scores ws
       JOIN users u ON ws.user_id = u.user_id
       WHERE ws.season = $1 AND u.is_active = true
-      GROUP BY u.user_id, u.username, u.first_name, u.last_name
+      GROUP BY u.user_id, u.username, u.alias
       HAVING COUNT(ws.week) > 0
       ORDER BY total_points DESC
       LIMIT 5`,
