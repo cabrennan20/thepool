@@ -153,25 +153,29 @@ const PicksManager = () => {
   };
 
   const updatePick = async (gameId, selectedTeam) => {
-    const existingPick = getPick(gameId);
-    const newPicks = [...picks];
+    const existingPickIndex = picks.findIndex(p => p.game_id === gameId);
     
-    if (existingPick) {
+    if (existingPickIndex !== -1) {
       // Update existing pick
-      existingPick.selected_team = selectedTeam;
+      const newPicks = [...picks];
+      newPicks[existingPickIndex] = {
+        ...newPicks[existingPickIndex],
+        selected_team: selectedTeam,
+        updated_at: new Date().toISOString()
+      };
+      setPicks(newPicks);
     } else {
       // Add new pick
-      newPicks.push({
+      const newPick = {
         pick_id: Date.now(), // Temporary ID
         game_id: gameId,
         user_id: user.user_id,
         selected_team: selectedTeam,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      });
+      };
+      setPicks(prevPicks => [...prevPicks, newPick]);
     }
-    
-    setPicks(newPicks);
   };
 
   const validatePicks = () => {
@@ -419,20 +423,20 @@ const PicksManager = () => {
               <div className="mb-2 lg:mb-4">
                 <div className="flex items-center justify-between text-xs lg:text-sm text-gray-600 dark:text-gray-400 mb-1 lg:mb-2">
                   <span className="font-bold lg:font-normal">Games Picked</span>
-                  <span className="font-bold lg:font-normal">{picks.length}/{games.length}</span>
+                  <span className="font-bold lg:font-normal">{games.filter(game => getPick(game.game_id)).length}/{games.length}</span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 lg:h-3">
                   <div 
                     className="bg-blue-600 h-2 lg:h-3 rounded-full transition-all duration-500" 
-                    style={{ width: `${games.length > 0 ? (picks.length / games.length) * 100 : 0}%` }}
+                    style={{ width: `${games.length > 0 ? (games.filter(game => getPick(game.game_id)).length / games.length) * 100 : 0}%` }}
                   />
                 </div>
-                {picks.length === games.length && tiebreakerPoints !== '' && (
+                {games.filter(game => getPick(game.game_id)).length === games.length && tiebreakerPoints !== '' && (
                   <div className="mt-1 lg:mt-2 text-green-600 font-medium text-xs lg:text-sm">
                     🎉 All picks and tiebreaker complete!
                   </div>
                 )}
-                {picks.length === games.length && tiebreakerPoints === '' && (
+                {games.filter(game => getPick(game.game_id)).length === games.length && tiebreakerPoints === '' && (
                   <div className="mt-1 lg:mt-2 text-orange-600 font-medium text-xs lg:text-sm">
                     🎯 Add tiebreaker to complete!
                   </div>
@@ -482,7 +486,7 @@ const PicksManager = () => {
                 <button
                   onClick={submitPicks}
                   disabled={submitting}
-                  className={`w-full px-3 lg:px-4 py-2 lg:py-3 rounded-lg font-semibold text-white text-sm lg:text-base transition-all duration-200 ${submitting ? 'bg-gray-400 cursor-not-allowed' : picks.length === games.length && tiebreakerPoints !== '' ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl' : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'}`}
+                  className={`w-full px-3 lg:px-4 py-2 lg:py-3 rounded-lg font-semibold text-white text-sm lg:text-base transition-all duration-200 ${submitting ? 'bg-gray-400 cursor-not-allowed' : games.filter(game => getPick(game.game_id)).length === games.length && tiebreakerPoints !== '' ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl' : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'}`}
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center">
@@ -497,7 +501,7 @@ const PicksManager = () => {
                       ✅ Picks Saved!
                     </span>
                   ) : (
-                    `Submit ${picks.length} Pick${picks.length !== 1 ? 's' : ''}`
+                    `Submit ${games.filter(game => getPick(game.game_id)).length} Pick${games.filter(game => getPick(game.game_id)).length !== 1 ? 's' : ''}`
                   )}
                 </button>
                 
@@ -516,9 +520,9 @@ const PicksManager = () => {
                   </div>
                 )}
                 
-                {picks.length > 0 && !validationError && (
+                {games.filter(game => getPick(game.game_id)).length > 0 && !validationError && (
                   <p className="hidden lg:block mt-2 text-sm text-gray-600 dark:text-gray-400 text-center">
-                    {picks.length} of {games.length} games selected{tiebreakerPoints !== '' ? ', tiebreaker set' : ', tiebreaker needed'}
+                    {games.filter(game => getPick(game.game_id)).length} of {games.length} games selected{tiebreakerPoints !== '' ? ', tiebreaker set' : ', tiebreaker needed'}
                   </p>
                 )}
               </div>
